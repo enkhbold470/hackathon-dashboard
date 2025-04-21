@@ -40,16 +40,16 @@ export default function ApplicationDashboard() {
   }
 
   const confettiColors = [
-    colors.palette.mauve,
-    colors.palette.pink,
-    colors.palette.lavender,
-    colors.palette.blue,
-    colors.palette.sapphire,
-    colors.palette.teal,
-    colors.palette.green,
-    colors.palette.yellow,
-    colors.palette.peach,
-    colors.palette.rosewater,
+    colors.palette.base,
+    colors.palette.foam,
+    colors.palette.gold,
+    colors.palette.iris,
+    colors.palette.love,
+    colors.palette.overlay,
+    colors.palette.rose,
+    colors.palette.subtle,
+    colors.palette.surface,
+    colors.palette.text,
   ]
 
   return (
@@ -73,7 +73,7 @@ export default function ApplicationDashboard() {
               <div
                 className="mr-3 h-10 w-10 rounded-full flex items-center justify-center"
                 style={{
-                  background: `linear-gradient(to bottom right, ${colors.palette.mauve}, ${colors.palette.lavender})`,
+                  background: `linear-gradient(to bottom right, ${colors.palette.gold}, ${colors.palette.text})`,
                 }}
               >
                 <span className="font-bold text-xl" style={{ color: colors.theme.background }}>
@@ -84,14 +84,14 @@ export default function ApplicationDashboard() {
                 <CardTitle
                   className="text-2xl font-bold tracking-wider"
                   style={{
-                    background: `linear-gradient(to right, ${colors.palette.mauve}, ${colors.palette.pink})`,
+                    background: `linear-gradient(to right, ${colors.palette.love}, ${colors.palette.gold})`,
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                   }}
                 >
                   DAHacks 3.5
                 </CardTitle>
-                <CardDescription style={{ color: colors.palette.subtext1 }}>
+                <CardDescription style={{ color: colors.palette.love }}>
                   Apply for our upcoming hackathon and track your application status
                 </CardDescription>
               </div>

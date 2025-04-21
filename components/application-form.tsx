@@ -117,11 +117,11 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
       setSavedFields((prev) => ({ ...prev, [field]: false }))
     }, 2000)
 
-    toast({
-      title: "Progress saved",
-      description: "Your application is being saved automatically.",
-      duration: 2000,
-    })
+    // toast({
+    //   title: "Progress saved",
+    //   description: "Your application is being saved automatically.",
+    //   duration: 2000,
+    // })
   }, 1000)
 
   // Watch for form changes and save in real-time
@@ -170,6 +170,7 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
 
   const labelStyles = {
     color: colors.theme.foreground,
+    
   }
 
   const sectionTitleStyles = {
@@ -177,7 +178,7 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
   }
 
   const sectionDescriptionStyles = {
-    color: colors.palette.subtext0,
+    color: colors.theme.foreground,
   }
 
   const errorMessageStyles = {
@@ -207,7 +208,7 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
               </div>
               <FormControl>
                 <Input
-                  placeholder="John Doe"
+                  placeholder="Inky Foo"
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
@@ -230,7 +231,7 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
               </div>
               <FormControl>
                 <Input
-                  placeholder="john.doe@example.com"
+                  placeholder="john.doe@fhda.edu"
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
@@ -521,11 +522,14 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           name="links"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center">
+              <div className="flex flex-col">
                 <FormLabel style={labelStyles}>
-                  Optionally, add any links (separated by commas) that you'd like us to check out! GitHub, LinkedIn,
-                  Devpost, Portfolio, Awards, Dribbble, etc.
+                  Optionally, add any links (separated by commas) 
                 </FormLabel>
+                <FormDescription>
+                that you'd like us to check out! GitHub, LinkedIn,
+                Devpost, Portfolio, Awards, Dribbble, etc.
+                </FormDescription>
                 {renderSavingIndicator("links")}
               </div>
               <FormControl>
@@ -547,12 +551,16 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           name="teammates"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center">
+              <div className="flex flex-col">
                 <FormLabel style={labelStyles}>
-                  If you plan on participating as a team, your decision for this can change at any time and is
+                  Team Information (optional!)
+
+                </FormLabel>
+                <FormDescription>
+                If you plan on participating as a team, your decision for this can change at any time and is
                   non-binding, please enter the emails of your teammates, separated by a single comma. ALL TEAM MEMBERS
                   MUST SUBMIT APPLICATIONS.
-                </FormLabel>
+                </FormDescription>
                 {renderSavingIndicator("teammates")}
               </div>
               <FormControl>
@@ -574,12 +582,16 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           name="referralEmail"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center">
+              <div className="flex flex-col">
                 <FormLabel style={labelStyles}>
-                  If you have a referral email address from someone who has already applied to DAHacks 3.5, please enter
+                If you have a referral email address (optional!)
+
+                </FormLabel>
+                <FormDescription>
+                 Someone who has already applied to DAHacks 3.5, please enter
                   it below. You may only enter one. This is part of a raffle that will occur during the hackathon, where
                   the winner gets an APPLE WATCH!
-                </FormLabel>
+                </FormDescription>
                 {renderSavingIndicator("referralEmail")}
               </div>
               <FormControl>
@@ -602,7 +614,7 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>Dietary Restrictions</FormLabel>
+                <FormLabel style={labelStyles}>Dietary Restrictions </FormLabel>
                 {renderSavingIndicator("dietaryRestrictions")}
               </div>
               <FormControl>
@@ -665,7 +677,7 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
 
         <div className="flex items-center justify-between pt-4">
           {Object.values(savingFields).some(Boolean) && !isSubmitted && (
-            <div className="flex items-center text-sm" style={{ color: colors.palette.subtext0 }}>
+            <div className="flex items-center text-sm" style={{ color: colors.theme.foreground }}>
               <div className="mr-2 inline-flex items-center justify-center w-4 h-4 relative">
                 <div
                   className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
@@ -676,7 +688,7 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
             </div>
           )}
           {!Object.values(savingFields).some(Boolean) && !isSubmitted && (
-            <div className="flex items-center text-sm" style={{ color: colors.palette.subtext0 }}>
+            <div className="flex items-center text-sm" style={{ color: colors.theme.foreground }}>
               <Save className="h-4 w-4 mr-2" style={{ color: colors.theme.success }} />
               <span>All changes saved</span>
             </div>
