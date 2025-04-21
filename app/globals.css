@@ -4,48 +4,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 100% 50%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 200 100% 50%;
+    --background: 25 14% 12%;
+    --foreground: 220 13% 91%;
+    --card: 30 14% 15%;
+    --card-foreground: 220 13% 91%;
+    --popover: 30 14% 15%;
+    --popover-foreground: 220 13% 91%;
+    --primary: 200 50% 35%;
+    --primary-foreground: 220 13% 91%;
+    --secondary: 350 70% 45%;
+    --secondary-foreground: 220 13% 91%;
+    --muted: 30 14% 15%;
+    --muted-foreground: 220 13% 45%;
+    --accent: 350 70% 45%;
+    --accent-foreground: 220 13% 91%;
+    --destructive: 350 70% 45%;
+    --destructive-foreground: 220 13% 91%;
+    --border: 30 14% 20%;
+    --input: 30 14% 15%;
+    --ring: 200 50% 35%;
     --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 142 100% 50%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 100% 50%;
   }
 }
 
@@ -91,12 +69,12 @@
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(136, 57, 239, 0.4);
+    box-shadow: 0 0 0 0 rgba(49, 116, 143, 0.4);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(136, 57, 239, 0);
+    box-shadow: 0 0 0 10px rgba(49, 116, 143, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(136, 57, 239, 0);
+    box-shadow: 0 0 0 0 rgba(49, 116, 143, 0);
   }
 }
