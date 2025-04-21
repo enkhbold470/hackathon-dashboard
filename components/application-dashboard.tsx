@@ -7,6 +7,8 @@ import ApplicationForm from "./application-form"
 import ApplicationStatus from "./application-status"
 import ConfettiExplosion from "react-confetti-explosion"
 import colors from "@/lib/colors.json"
+import useWindowSize from "@/hooks/useWindowSize"
+import Confetti from 'react-confetti'
 
 type Status = "not_started" | "in_progress" | "submitted" | "accepted" | "rejected" | "confirmed"
 
@@ -15,6 +17,8 @@ export default function ApplicationDashboard() {
   const [isExploding, setIsExploding] = useState(false)
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [activeTab, setActiveTab] = useState("application")
+  const { width, height } = useWindowSize()
+
 
   const handleFormChange = (data: Record<string, any>) => {
     setFormData(data)
@@ -35,7 +39,7 @@ export default function ApplicationDashboard() {
     setTimeout(() => {
       setApplicationStatus("accepted")
       setIsExploding(true)
-      setTimeout(() => setIsExploding(false), 5000)
+      setTimeout(() => setIsExploding, 30000)
     }, 3000)
   }
 
@@ -57,7 +61,9 @@ export default function ApplicationDashboard() {
       <div className="relative w-full">
         {isExploding && (
           <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
-            <ConfettiExplosion force={0.9} duration={5000} particleCount={300} width={1600} colors={confettiColors} />
+            
+            {/* <ConfettiExplosion force={0.9} duration={5000} particleCount={300} width={1600} colors={confettiColors} /> */}
+            <Confetti width={width} height={height}/>
           </div>
         )}
 
