@@ -96,7 +96,7 @@
           }
         },
         "futurePlans": {
-          "label": "What are your future plans in tech or other fields?",
+          "label": "What are your future plans in next 10 years in tech or other fields? Dream big :)",
           "type": "textarea",
           "placeholder": "Tell us about your aspirations and goals...",
           "validationRules": {
@@ -106,7 +106,7 @@
           }
         },
         "funFact": {
-          "label": "Share a fun fact about yourself!",
+          "label": "Share a fun fact about yourself :)",
           "type": "textarea",
           "placeholder": "Something interesting about you...",
           "validationRules": {
