@@ -8,7 +8,9 @@ import {
   SignedIn,
   SignedOut,
   UserButton,
+  useUser
 } from '@clerk/nextjs'
+import colors from "@/lib/colors.json"
 export const metadata: Metadata = {
   title: "Typescript App",
   description: "Created with Nextjs",
@@ -20,12 +22,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
-    <ClerkProvider waitlistUrl="/">   
+    <ClerkProvider >   
      <html lang="en">
       <body>
-
-      {/* <header className="flex justify-end items-center p-4 gap-4 h-16 border">
+      <header className="flex justify-end items-center p-4 gap-4 h-16">
             <SignedOut>
               <SignInButton />
               <SignUpButton />
@@ -33,7 +35,7 @@ export default function RootLayout({
             <SignedIn>
               <UserButton />
             </SignedIn>
-          </header> */}
+          </header>
         <main>{children}</main>
         <Toaster />
       </body>
