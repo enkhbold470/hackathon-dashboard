@@ -38,7 +38,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { action: string } }
 ) {
-  const action = params.action;
+  const { action } = await params;      // ✅ Correct
   console.log(`[API GET] Processing ${action} request`);
   
   const { userId } = getAuth(request);
@@ -117,7 +117,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { action: string } }
 ) {
-  const action = params.action;
+  const { action } = await params;
   console.log(`[API POST] Processing ${action} request`);
   
   const { userId } = getAuth(request);
