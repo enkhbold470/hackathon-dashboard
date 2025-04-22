@@ -1,5 +1,5 @@
 import ApplicationDashboard from "@/components/application-dashboard"
-import colors from "@/lib/colors.json"
+import colors from "@/lib/colors"
 import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton, Waitlist } from '@clerk/nextjs'
 
 export default function Home() {

@@ -10,7 +10,7 @@ import {
   UserButton,
   useUser
 } from '@clerk/nextjs'
-import colors from "@/lib/colors.json"
+import colors from "@/lib/colors"
 export const metadata: Metadata = {
   title: "Typescript App",
   description: "Created with Nextjs",
