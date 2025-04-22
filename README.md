@@ -22,7 +22,7 @@ A modern, feature-rich application management system for hackathon organizers an
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/hackathon-dashboard.git
+   git clone https://github.com/enkhbold470/hackathon-dashboard.git
    cd hackathon-dashboard
    ```
 
@@ -118,6 +118,7 @@ The application uses a PostgreSQL database with a primary `applications` table:
 | status                | VARCHAR(50)    | Application status               |
 | created_at            | TIMESTAMPTZ    | Creation timestamp               |
 | updated_at            | TIMESTAMPTZ    | Last update timestamp            |
+etc
 
 ## License
 
