@@ -14,8 +14,10 @@ export default function Home() {
       className="min-h-screen flex justify-center"
       style={{ backgroundColor: colors.theme.background, color: colors.theme.foreground }}
     >
-      <ApplicationDashboard />
-      {/* <Waitlist /> */}
+      {/* <ApplicationDashboard /> */}
+      <div className="flex items-center">
+      <Waitlist />
+      </div>
 
     </main>
   )
