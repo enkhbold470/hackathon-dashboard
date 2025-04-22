@@ -22,6 +22,10 @@ export default function ApplicationDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const [isSaving, setIsSaving] = useState(false)
+const [lastSaved, setLastSaved] = useState<Date | null>(null)
+
+
   console.log("[ApplicationDashboard] Component initialized")
 
   useEffect(() => {
@@ -71,35 +75,41 @@ export default function ApplicationDashboard() {
 
   const handleFormChange = async (newData: Record<string, any>) => {
     console.log("[ApplicationDashboard] Form data changed:", JSON.stringify(newData))
-    const updatedFormData = { ...formData, ...newData };
-    setFormData(updatedFormData);
-
+    const updatedFormData = { ...formData, ...newData }
+    setFormData(updatedFormData)
+  
     if (applicationStatus === "not_started") {
       console.log("[ApplicationDashboard] First form change detected, updating status to in_progress")
-      setApplicationStatus("in_progress");
+      setApplicationStatus("in_progress")
     }
-
+  
+    setIsSaving(true)
+  
     try {
       console.log("[ApplicationDashboard] Saving application draft to database")
       const response = await fetch('/api/db/save-application', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedFormData),
-      });
-
+      })
+  
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json()
         console.error("[ApplicationDashboard] Save application error:", errorData)
-        throw new Error(errorData.error || 'Failed to save application draft');
+        throw new Error(errorData.error || 'Failed to save application draft')
       }
+  
       console.log("[ApplicationDashboard] Form data saved successfully")
-
+      setLastSaved(new Date())
+  
     } catch (error: any) {
-      console.error("[ApplicationDashboard] Error saving form data:", error);
-      toast.error(`Failed to save changes: ${error.message}`);
+      console.error("[ApplicationDashboard] Error saving form data:", error)
+      toast.error(`Failed to save changes: ${error.message}`)
+    } finally {
+      setIsSaving(false)
     }
   }
-
+  
   const handleFormSubmit = async () => {
     if (isSubmitting) {
       console.log("[ApplicationDashboard] Submission already in progress, ignoring duplicate submit")
@@ -142,18 +152,7 @@ export default function ApplicationDashboard() {
     }
   }
 
-  const confettiColors = [
-    colors.palette.base,
-    colors.palette.foam,
-    colors.palette.gold,
-    colors.palette.iris,
-    colors.palette.love,
-    colors.palette.overlay,
-    colors.palette.rose,
-    colors.palette.subtle,
-    colors.palette.surface,
-    colors.palette.text,
-  ]
+
 
   return (
     <div className="container max-w-5xl py-10 flex justify-center items-center w-full">
@@ -240,13 +239,26 @@ export default function ApplicationDashboard() {
                          style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}></div>
                   </div>
                 ) : (
+                  
+<div>
+
                   <ApplicationForm
                     onChange={handleFormChange}
                     onSubmit={handleFormSubmit}
                     formData={formData}
                     isSubmitted={applicationStatus !== "not_started" && applicationStatus !== "in_progress"}
                     isLoading={isSubmitting || isLoading}
-                  />
+                    /> 
+                    
+                    <div className="mt-4 text-sm text-right text-muted-foreground">
+  {isSaving ? (
+    <span>Saving...</span>
+  ) : lastSaved ? (
+    <span>Saved at {lastSaved.toLocaleTimeString()}</span>
+  ) : null}
+</div>
+
+                    </div>
                 )}
               </TabsContent>
               <TabsContent value="status" className="p-6">
