@@ -41,6 +41,13 @@ export default function ApplicationDashboard() {
           console.log("[ApplicationDashboard] Application found with status:", data.application.status)
           setFormData(data.application);
           setApplicationStatus(data.application.status || 'not_started');
+          
+          // Set default tab to 'status' if application is submitted/accepted/rejected/confirmed
+          if (['submitted', 'accepted', 'rejected', 'confirmed'].includes(data.application.status)) {
+            setActiveTab('status');
+            console.log("[ApplicationDashboard] Setting default tab to status based on application status")
+          }
+          
           if (data.application.status === 'accepted') {
              setIsExploding(true);
              console.log("[ApplicationDashboard] Triggering confetti animation for accepted status")
