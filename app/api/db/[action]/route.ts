@@ -38,7 +38,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { action: string } }
 ) {
-  console.log(`[API GET] Processing ${params.action} request`);
+  const action = params.action;
+  console.log(`[API GET] Processing ${action} request`);
   
   const { userId } = getAuth(request);
   if (!userId) {
@@ -49,7 +50,6 @@ export async function GET(
   console.log(`[API GET] Authorized user: ${userId}`);
 
   try {
-    const { action } = params;
     const searchParams = request.nextUrl.searchParams;
     
     switch (action) {
@@ -105,7 +105,7 @@ export async function GET(
         );
     }
   } catch (error: any) {
-    console.error(`[API GET Error] (${params.action}):`, error);
+    console.error(`[API GET Error] (${action}):`, error);
     return NextResponse.json(
       { error: error.message || 'Internal Server Error' },
       { status: 500 }
@@ -117,7 +117,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { action: string } }
 ) {
-  console.log(`[API POST] Processing ${params.action} request`);
+  const action = params.action;
+  console.log(`[API POST] Processing ${action} request`);
   
   const { userId } = getAuth(request);
   if (!userId) {
@@ -128,7 +129,6 @@ export async function POST(
   console.log(`[API POST] Authorized user: ${userId}`);
 
   try {
-    const { action } = params;
     const body = await request.json();
     console.log(`[API POST] Request body for ${action}:`, JSON.stringify(body));
     
@@ -348,10 +348,10 @@ export async function POST(
         );
     }
   } catch (error: any) {
-    console.error(`[API POST Error] (${params.action}):`, error);
+    console.error(`[API POST Error] (${action}):`, error);
     // Handle specific DB errors like unique constraint violation
     if (error.code === '23505') { // Unique violation error code for PostgreSQL
-      console.error(`[API POST] Database unique constraint violation for action ${params.action}:`, error.detail);
+      console.error(`[API POST] Database unique constraint violation for action ${action}:`, error.detail);
       return NextResponse.json(
         { error: 'Database error: Unique constraint violated. Check email.', details: error.detail }, 
         { status: 409 } // Conflict status code
