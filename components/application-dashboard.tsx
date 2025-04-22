@@ -19,7 +19,7 @@ export default function ApplicationDashboard() {
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [activeTab, setActiveTab] = useState("application")
   const { width, height } = useWindowSize()
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   console.log("[ApplicationDashboard] Component initialized")
@@ -27,7 +27,6 @@ export default function ApplicationDashboard() {
   useEffect(() => {
     const fetchApplication = async () => {
       console.log("[ApplicationDashboard] Fetching application data")
-      setIsLoading(true);
       try {
         const response = await fetch('/api/db/get-application');
         if (!response.ok) {
@@ -65,6 +64,8 @@ export default function ApplicationDashboard() {
         console.log("[ApplicationDashboard] Application fetch completed, loading state cleared")
       }
     };
+    
+    // Fetch immediately
     fetchApplication();
   }, []);
 
@@ -233,16 +234,30 @@ export default function ApplicationDashboard() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="application" className="p-6">
-                <ApplicationForm
-                  onChange={handleFormChange}
-                  onSubmit={handleFormSubmit}
-                  formData={formData}
-                  isSubmitted={applicationStatus !== "not_started" && applicationStatus !== "in_progress"}
-                  isLoading={isSubmitting || isLoading}
-                />
+                {isLoading ? (
+                  <div className="flex justify-center items-center p-10">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent"
+                         style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}></div>
+                  </div>
+                ) : (
+                  <ApplicationForm
+                    onChange={handleFormChange}
+                    onSubmit={handleFormSubmit}
+                    formData={formData}
+                    isSubmitted={applicationStatus !== "not_started" && applicationStatus !== "in_progress"}
+                    isLoading={isSubmitting || isLoading}
+                  />
+                )}
               </TabsContent>
               <TabsContent value="status" className="p-6">
-                <ApplicationStatus status={applicationStatus} />
+                {isLoading ? (
+                  <div className="flex justify-center items-center p-10">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent"
+                         style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}></div>
+                  </div>
+                ) : (
+                  <ApplicationStatus status={applicationStatus} />
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>
