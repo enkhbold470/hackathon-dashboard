@@ -1,5 +1,6 @@
 import ApplicationDashboard from "@/components/application-dashboard"
 import colors from "@/lib/colors.json"
+import { Waitlist } from '@clerk/nextjs'
 
 export default function Home() {
   // In a real implementation, you would check if the user is authenticated
@@ -14,6 +15,8 @@ export default function Home() {
       style={{ backgroundColor: colors.theme.background, color: colors.theme.foreground }}
     >
       <ApplicationDashboard />
+      {/* <Waitlist /> */}
+
     </main>
   )
 }
