@@ -21,11 +21,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-    <html lang="en">
+    <ClerkProvider waitlistUrl="/">   
+     <html lang="en">
       <body>
 
-      <header className="flex justify-end items-center p-4 gap-4 h-16 border">
+      {/* <header className="flex justify-end items-center p-4 gap-4 h-16 border">
             <SignedOut>
               <SignInButton />
               <SignUpButton />
@@ -33,7 +33,7 @@ export default function RootLayout({
             <SignedIn>
               <UserButton />
             </SignedIn>
-          </header>
+          </header> */}
         <main>{children}</main>
         <Toaster />
       </body>
