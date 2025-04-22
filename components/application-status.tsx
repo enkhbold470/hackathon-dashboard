@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Clock, XCircle, AlertCircle, PartyPopper, Terminal, Code } from "lucide-react"
 import { motion } from "framer-motion"
-import colors from "@/lib/colors.json"
+import colors from "@/lib/colors"
 import applicationData from "@/lib/applicationData.json"
 
 type ApplicationStatus = "not_started" | "in_progress" | "submitted" | "accepted" | "rejected" | "confirmed"
@@ -239,7 +239,8 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                       backgroundColor: colors.theme.background,
                       borderColor: colors.theme.success,
                       borderWidth: "1px",
-                      boxShadow: `0 0 16px ${colors.theme.success}40`,
+                      boxShadow: `0 0 12px ${colors.theme.accent}`,
+
                     }}
                   >
                     <div

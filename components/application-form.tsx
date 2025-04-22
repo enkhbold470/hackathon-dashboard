@@ -15,51 +15,67 @@ import { debounce } from "@/lib/utils"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Check, Save } from "lucide-react"
-import colors from "@/lib/colors.json"
+import colors from "@/lib/colors"
+import applicationData from "@/lib/applicationData.json"
 
-const formSchema = z.object({
-  legalName: z.string().min(2, {
-    message: "Legal name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  university: z.string().min(2, {
-    message: "University name must be at least 2 characters.",
-  }),
-  major: z.string().min(2, {
-    message: "Major must be at least 2 characters.",
-  }),
-  graduationYear: z.string().min(4, {
-    message: "Please enter a valid graduation year.",
-  }),
-  experience: z.string({
-    required_error: "Please select your experience level.",
-  }),
-  whyAttend: z.string().min(10, {
-    message: "Please tell us why you want to attend in at least 10 characters.",
-  }),
-  projectExperience: z.string().min(10, {
-    message: "Please share your project experience in at least 10 characters.",
-  }),
-  futurePlans: z.string().min(10, {
-    message: "Please share your future plans in at least 10 characters.",
-  }),
-  funFact: z.string().min(5, {
-    message: "Please share a fun fact in at least 5 characters.",
-  }),
-  selfDescription: z.string({
-    required_error: "Please select how you would describe yourself.",
-  }),
-  additionalInfo: z.string().optional(),
-  links: z.string().optional(),
-  teammates: z.string().optional(),
-  referralEmail: z.string().optional(),
-  dietaryRestrictions: z.string().optional(),
-  agreeToTerms: z.boolean().refine((val) => val === true, {
-    message: "You must agree to the terms and conditions.",
-  }),
-})
+// Dynamically build the schema based on applicationData.json
+const buildSchema = () => {
+  console.log("[ApplicationForm] Building form schema from config")
+  let schema: Record<string, any> = {}
+
+  Object.values(applicationData.formSchema).forEach((section) => {
+    Object.entries(section.fields).forEach(([fieldName, fieldConfig]) => {
+      let fieldSchema: any = z.any() // Default to any
+
+      switch (fieldConfig.type) {
+        case "text":
+        case "email":
+        case "textarea":
+          fieldSchema = z.string()
+          if (fieldConfig.validationRules.required) {
+            fieldSchema = fieldSchema.min(1, { message: fieldConfig.validationRules.message || "This field is required." })
+          }
+          if (fieldConfig.validationRules.minLength) {
+            fieldSchema = fieldSchema.min(fieldConfig.validationRules.minLength, { message: fieldConfig.validationRules.message })
+          }
+          if (fieldConfig.type === "email" && fieldConfig.validationRules.email) {
+            fieldSchema = fieldSchema.email({ message: fieldConfig.validationRules.message })
+          }
+          break
+        case "select":
+        case "radio":
+          fieldSchema = z.string()
+          if (fieldConfig.validationRules.required) {
+            fieldSchema = fieldSchema.min(1, { message: fieldConfig.validationRules.message || "Please make a selection." })
+          }
+          break
+        case "checkbox":
+          fieldSchema = z.boolean()
+          if (fieldConfig.validationRules.required && fieldConfig.validationRules.value === true) {
+            fieldSchema = fieldSchema.refine((val: boolean) => val === true, {
+              message: fieldConfig.validationRules.message,
+            })
+          }
+          break
+        default:
+          // Fallback for unknown types or optional fields
+          fieldSchema = z.string().optional()
+      }
+      
+      // Handle optional fields explicitly
+      if (!fieldConfig.validationRules.required) {
+        fieldSchema = fieldSchema.optional()
+      }
+
+      schema[fieldName] = fieldSchema
+    })
+  })
+
+  console.log("[ApplicationForm] Schema build complete")
+  return z.object(schema)
+}
+
+const formSchema = buildSchema()
 
 type FormData = z.infer<typeof formSchema>
 
@@ -68,9 +84,76 @@ interface ApplicationFormProps {
   onSubmit: () => void
   formData: Record<string, any>
   isSubmitted: boolean
+  isLoading: boolean
 }
 
-export default function ApplicationForm({ onChange, onSubmit, formData, isSubmitted }: ApplicationFormProps) {
+// Initialize default values from JSON schema if available
+const getDefaultValues = () => {
+  console.log("[ApplicationForm] Initializing default form values")
+  let defaults: Record<string, any> = {}
+  Object.values(applicationData.formSchema).forEach((section) => {
+    Object.entries(section.fields).forEach(([fieldName, fieldConfig]) => {
+      switch (fieldConfig.type) {
+        case "text":
+        case "email":
+        case "textarea":
+        case "select":
+        case "radio":
+          defaults[fieldName] = ""
+          break
+        case "checkbox":
+          defaults[fieldName] = false
+          break
+        default:
+          defaults[fieldName] = "" // Default empty string for others
+      }
+    })
+  })
+  console.log("[ApplicationForm] Default values created")
+  return defaults
+}
+
+export default function ApplicationForm({
+  onChange,
+  onSubmit,
+  formData,
+  isSubmitted,
+  isLoading,
+}: ApplicationFormProps) {
+  console.log("[ApplicationForm] Component initialized with formData:", JSON.stringify(formData))
+  console.log("[ApplicationForm] isSubmitted:", isSubmitted, "isLoading:", isLoading)
+  
+  const inputStyles = {
+    backgroundColor: colors.theme.inputBackground,
+    borderColor: colors.theme.inputBorder,
+    color: colors.theme.inputText,
+  };
+  
+  const labelStyles = {
+    color: colors.theme.foreground,
+  };
+  
+  const sectionTitleStyles = {
+    color: colors.theme.primary,
+  };
+  
+  const sectionDescriptionStyles = {
+    color: colors.theme.foreground,
+  };
+  
+  const errorMessageStyles = {
+    color: colors.theme.danger,
+  };
+  
+  const buttonStyles = {
+    backgroundColor: colors.theme.primary,
+    color: colors.theme.buttonText,
+  };
+  
+
+
+
+
   const { toast } = useToast()
   const [savingFields, setSavingFields] = useState<Record<string, boolean>>({})
   const [savedFields, setSavedFields] = useState<Record<string, boolean>>({})
@@ -78,36 +161,22 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      legalName: "",
-      email: "",
-      university: "",
-      major: "",
-      graduationYear: "",
-      experience: "",
-      whyAttend: "",
-      projectExperience: "",
-      futurePlans: "",
-      funFact: "",
-      selfDescription: "",
-      additionalInfo: "",
-      links: "",
-      teammates: "",
-      referralEmail: "",
-      dietaryRestrictions: "",
-      agreeToTerms: false,
-      ...formData,
+      ...getDefaultValues(), // Use generated defaults
+      ...formData, // Override with existing formData
     },
   })
 
   // Initialize form with existing data
   useEffect(() => {
     if (Object.keys(formData).length > 0) {
+      console.log("[ApplicationForm] Resetting form with existing data")
       form.reset(formData)
     }
   }, [])
 
   // Debounced save function for real-time saving
   const debouncedSave = debounce((data: FormData, field: string) => {
+    console.log(`[ApplicationForm] Saving field "${field}" with debounced save`)
     onChange(data)
     setSavingFields((prev) => ({ ...prev, [field]: false }))
     setSavedFields((prev) => ({ ...prev, [field]: true }))
@@ -116,27 +185,27 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
     setTimeout(() => {
       setSavedFields((prev) => ({ ...prev, [field]: false }))
     }, 2000)
-
-    // toast({
-    //   title: "Progress saved",
-    //   description: "Your application is being saved automatically.",
-    //   duration: 2000,
-    // })
   }, 1000)
 
   // Watch for form changes and save in real-time
   useEffect(() => {
+    console.log("[ApplicationForm] Setting up form change watcher")
     const subscription = form.watch((data, { name }) => {
       if (name) {
+        console.log(`[ApplicationForm] Field "${name}" changed, scheduling save`)
         setSavingFields((prev) => ({ ...prev, [name]: true }))
         debouncedSave(data as FormData, name)
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      console.log("[ApplicationForm] Cleaning up form watcher subscription")
+      subscription.unsubscribe()
+    }
   }, [form.watch])
 
   const handleSubmit = (data: FormData) => {
+    console.log("[ApplicationForm] Form submit handler called with data:", JSON.stringify(data))
     onChange(data)
     onSubmit()
   }
@@ -147,10 +216,12 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
     if (savingFields[fieldName]) {
       return (
         <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
-          <div
-            className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
-          ></div>
+          
+     <div
+  className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
+  style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
+></div>
+
         </div>
       )
     }
@@ -162,38 +233,21 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
     return null
   }
 
-  const inputStyles = {
-    backgroundColor: colors.theme.inputBackground,
-    borderColor: colors.theme.inputBorder,
-    color: colors.theme.inputText,
-  }
-
-  const labelStyles = {
-    color: colors.theme.foreground,
-    
-  }
-
-  const sectionTitleStyles = {
-    color: colors.theme.primary,
-  }
-
-  const sectionDescriptionStyles = {
-    color: colors.theme.foreground,
-  }
-
-  const errorMessageStyles = {
-    color: colors.theme.danger,
-  }
+ 
+  const personalInfo = applicationData.formSchema.personalInfo
+  const aboutYou = applicationData.formSchema.aboutYou
+  const additionalInfoSection = applicationData.formSchema.additionalInfo
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* Personal Information Section */}
         <div className="space-y-2">
           <h2 className="text-xl font-semibold" style={sectionTitleStyles}>
-            Personal Information
+            {personalInfo.title}
           </h2>
           <p className="text-sm" style={sectionDescriptionStyles}>
-            Tell us about yourself
+            {personalInfo.description}
           </p>
         </div>
 
@@ -203,12 +257,12 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>Legal Name (as shown on ID)</FormLabel>
+                <FormLabel style={labelStyles}>{personalInfo.fields.legalName.label}</FormLabel>
                 {renderSavingIndicator("legalName")}
               </div>
               <FormControl>
                 <Input
-                  placeholder="Inky Foo"
+                  placeholder={personalInfo.fields.legalName.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
@@ -226,12 +280,12 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>Email</FormLabel>
+                <FormLabel style={labelStyles}>{personalInfo.fields.email.label}</FormLabel>
                 {renderSavingIndicator("email")}
               </div>
               <FormControl>
                 <Input
-                  placeholder="john.doe@fhda.edu"
+                  placeholder={personalInfo.fields.email.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
@@ -250,12 +304,12 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>University</FormLabel>
+                  <FormLabel style={labelStyles}>{personalInfo.fields.university.label}</FormLabel>
                   {renderSavingIndicator("university")}
                 </div>
                 <FormControl>
                   <Input
-                    placeholder="De Anza College"
+                    placeholder={personalInfo.fields.university.placeholder}
                     {...field}
                     disabled={isSubmitted}
                     style={inputStyles}
@@ -266,18 +320,19 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="major"
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>Major</FormLabel>
+                  <FormLabel style={labelStyles}>{personalInfo.fields.major.label}</FormLabel>
                   {renderSavingIndicator("major")}
                 </div>
                 <FormControl>
                   <Input
-                    placeholder="Computer Science"
+                    placeholder={personalInfo.fields.major.placeholder}
                     {...field}
                     disabled={isSubmitted}
                     style={inputStyles}
@@ -297,12 +352,12 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>Graduation Year</FormLabel>
+                  <FormLabel style={labelStyles}>{personalInfo.fields.graduationYear.label}</FormLabel>
                   {renderSavingIndicator("graduationYear")}
                 </div>
                 <FormControl>
                   <Input
-                    placeholder="2025"
+                    placeholder={personalInfo.fields.graduationYear.placeholder}
                     {...field}
                     disabled={isSubmitted}
                     style={inputStyles}
@@ -313,25 +368,28 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="experience"
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>Coding Experience</FormLabel>
+                  <FormLabel style={labelStyles}>{personalInfo.fields.experience.label}</FormLabel>
                   {renderSavingIndicator("experience")}
                 </div>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
                   <FormControl>
                     <SelectTrigger style={inputStyles}>
-                      <SelectValue placeholder="Select your experience level" />
+                      <SelectValue placeholder={personalInfo.fields.experience.placeholder} />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent style={{ backgroundColor: colors.theme.background, borderColor: colors.theme.border }}>
-                    <SelectItem value="beginner">Beginner (0-1 years)</SelectItem>
-                    <SelectItem value="intermediate">Intermediate (1-3 years)</SelectItem>
-                    <SelectItem value="advanced">Advanced (3+ years)</SelectItem>
+                  <SelectContent>
+                    {personalInfo.fields.experience.options.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage style={errorMessageStyles} />
@@ -340,12 +398,13 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           />
         </div>
 
+        {/* About You Section */}
         <div className="space-y-2 pt-4">
           <h2 className="text-xl font-semibold" style={sectionTitleStyles}>
-            About You
+            {aboutYou.title}
           </h2>
           <p className="text-sm" style={sectionDescriptionStyles}>
-            Help us get to know you better
+            {aboutYou.description}
           </p>
         </div>
 
@@ -355,16 +414,16 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>Why do you want to come to DA Hacks 3.5?*</FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.whyAttend.label}</FormLabel>
                 {renderSavingIndicator("whyAttend")}
               </div>
               <FormControl>
                 <Textarea
-                  placeholder="Tell us why you're interested in attending our hackathon..."
-                  className="min-h-[100px] placeholder:text-opacity-50"
+                  placeholder={aboutYou.fields.whyAttend.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
+                  className="placeholder:text-opacity-50"
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -378,18 +437,16 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>
-                  Tell us about a project you've enjoyed working on, technical or non-technical.*
-                </FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.projectExperience.label}</FormLabel>
                 {renderSavingIndicator("projectExperience")}
               </div>
               <FormControl>
                 <Textarea
-                  placeholder="Share your experience with a project you've worked on..."
-                  className="min-h-[100px] placeholder:text-opacity-50"
+                  placeholder={aboutYou.fields.projectExperience.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
+                  className="placeholder:text-opacity-50"
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -403,18 +460,16 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>
-                  What's something you're excited to work on in the next 10 years? Dream big!*
-                </FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.futurePlans.label}</FormLabel>
                 {renderSavingIndicator("futurePlans")}
               </div>
               <FormControl>
                 <Textarea
-                  placeholder="Share your future aspirations and dreams..."
-                  className="min-h-[100px] placeholder:text-opacity-50"
+                  placeholder={aboutYou.fields.futurePlans.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
+                  className="placeholder:text-opacity-50"
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -428,16 +483,16 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>Tell us a fun fact about you :)*</FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.funFact.label}</FormLabel>
                 {renderSavingIndicator("funFact")}
               </div>
               <FormControl>
                 <Textarea
-                  placeholder="Share something interesting about yourself..."
-                  className="min-h-[80px] placeholder:text-opacity-50"
+                  placeholder={aboutYou.fields.funFact.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
+                  className="placeholder:text-opacity-50"
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -451,7 +506,7 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem className="space-y-3">
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>I would describe myself as a…</FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.selfDescription.label}</FormLabel>
                 {renderSavingIndicator("selfDescription")}
               </div>
               <FormControl>
@@ -461,30 +516,16 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
                   className="flex flex-col space-y-1"
                   disabled={isSubmitted}
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="designer" id="designer" style={{ borderColor: colors.theme.primary }} />
-                    <Label htmlFor="designer" style={labelStyles}>
-                      Designer
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="developer" id="developer" style={{ borderColor: colors.theme.primary }} />
-                    <Label htmlFor="developer" style={labelStyles}>
-                      Developer
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="both" id="both" style={{ borderColor: colors.theme.primary }} />
-                    <Label htmlFor="both" style={labelStyles}>
-                      Both
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="neither" id="neither" style={{ borderColor: colors.theme.primary }} />
-                    <Label htmlFor="neither" style={labelStyles}>
-                      Neither
-                    </Label>
-                  </div>
+                  {aboutYou.fields.selfDescription.options.map((option) => (
+                    <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <RadioGroupItem value={option.value} />
+                      </FormControl>
+                      <FormLabel className="font-normal" style={labelStyles}>
+                        {option.label}
+                      </FormLabel>
+                    </FormItem>
+                  ))}
                 </RadioGroup>
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -492,53 +533,32 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="additionalInfo"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>
-                  Is there anything else that we should know about you? (optional!)
-                </FormLabel>
-                {renderSavingIndicator("additionalInfo")}
-              </div>
-              <FormControl>
-                <Textarea
-                  placeholder="Share any additional information you'd like us to know..."
-                  className="min-h-[80px] placeholder:text-opacity-50"
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
+        {/* Additional Information Section */}
+        <div className="space-y-2 pt-4">
+          <h2 className="text-xl font-semibold" style={sectionTitleStyles}>
+            {additionalInfoSection.title}
+          </h2>
+          <p className="text-sm" style={sectionDescriptionStyles}>
+            {additionalInfoSection.description}
+          </p>
+        </div>
 
         <FormField
           control={form.control}
           name="links"
           render={({ field }) => (
             <FormItem>
-              <div className="flex flex-col">
-                <FormLabel style={labelStyles}>
-                  Optionally, add any links (separated by commas) 
-                </FormLabel>
-                <FormDescription>
-                that you'd like us to check out! GitHub, LinkedIn,
-                Devpost, Portfolio, Awards, Dribbble, etc.
-                </FormDescription>
+              <div className="flex items-center">
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.links.label}</FormLabel>
                 {renderSavingIndicator("links")}
               </div>
               <FormControl>
                 <Textarea
-                  placeholder="github.com/yourusername, linkedin.com/in/yourprofile, ..."
-                  className="min-h-[80px] placeholder:text-opacity-50"
+                  placeholder={additionalInfoSection.fields.links.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
+                  className="placeholder:text-opacity-50"
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -551,25 +571,17 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           name="teammates"
           render={({ field }) => (
             <FormItem>
-              <div className="flex flex-col">
-                <FormLabel style={labelStyles}>
-                  Team Information (optional!)
-
-                </FormLabel>
-                <FormDescription>
-                If you plan on participating as a team, your decision for this can change at any time and is
-                  non-binding, please enter the emails of your teammates, separated by a single comma. ALL TEAM MEMBERS
-                  MUST SUBMIT APPLICATIONS.
-                </FormDescription>
+              <div className="flex items-center">
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label}</FormLabel>
                 {renderSavingIndicator("teammates")}
               </div>
               <FormControl>
                 <Textarea
-                  placeholder="teammate1@example.com, teammate2@example.com, ..."
-                  className="min-h-[80px] placeholder:text-opacity-50"
+                  placeholder={additionalInfoSection.fields.teammates.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
+                  className="placeholder:text-opacity-50"
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -582,25 +594,17 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           name="referralEmail"
           render={({ field }) => (
             <FormItem>
-              <div className="flex flex-col">
-                <FormLabel style={labelStyles}>
-                If you have a referral email address (optional!)
-
-                </FormLabel>
-                <FormDescription>
-                 Someone who has already applied to DAHacks 3.5, please enter
-                  it below. You may only enter one. This is part of a raffle that will occur during the hackathon, where
-                  the winner gets an APPLE WATCH!
-                </FormDescription>
+              <div className="flex items-center">
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label}</FormLabel>
                 {renderSavingIndicator("referralEmail")}
               </div>
               <FormControl>
                 <Input
-                  placeholder="referrer@example.com"
-                  className="placeholder:text-opacity-50"
+                  placeholder={additionalInfoSection.fields.referralEmail.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
+                  className="placeholder:text-opacity-50"
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -614,21 +618,18 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>Dietary Restrictions </FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictions.label}</FormLabel>
                 {renderSavingIndicator("dietaryRestrictions")}
               </div>
               <FormControl>
                 <Textarea
-                  placeholder="Please list any dietary restrictions or allergies..."
-                  className="min-h-[80px] placeholder:text-opacity-50"
+                  placeholder={additionalInfoSection.fields.dietaryRestrictions.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
+                  className="placeholder:text-opacity-50"
                 />
               </FormControl>
-              <FormDescription style={sectionDescriptionStyles}>
-                This helps us plan meals during the event. Leave blank if none.
-              </FormDescription>
               <FormMessage style={errorMessageStyles} />
             </FormItem>
           )}
@@ -638,73 +639,46 @@ export default function ApplicationForm({ onChange, onSubmit, formData, isSubmit
           control={form.control}
           name="agreeToTerms"
           render={({ field }) => (
-            <FormItem
-              className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4"
-              style={{
-                backgroundColor: colors.theme.inputBackground,
-                borderColor: colors.theme.inputBorder,
-              }}
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow"
+              style={{ borderColor: isSubmitted ? colors.theme.success : colors.theme.inputBorder }}
             >
               <FormControl>
                 <Checkbox
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   disabled={isSubmitted}
-                  style={{
-                    borderColor: colors.theme.primary,
-                    backgroundColor: field.value ? colors.theme.primary : "transparent",
-                  }}
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel style={labelStyles}>I agree to the terms and conditions</FormLabel>
-                <FormDescription style={sectionDescriptionStyles}>
-                  By checking this box, you agree to our{" "}
-                  <a href="#" style={{ color: colors.theme.linkText, textDecoration: "underline" }}>
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a href="#" style={{ color: colors.theme.linkText, textDecoration: "underline" }}>
-                    Privacy Policy
-                  </a>
-                  .
-                </FormDescription>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label}</FormLabel>
+                <FormMessage style={errorMessageStyles} />
               </div>
-              <FormMessage style={errorMessageStyles} />
             </FormItem>
           )}
         />
 
-        <div className="flex items-center justify-between pt-4">
-          {Object.values(savingFields).some(Boolean) && !isSubmitted && (
-            <div className="flex items-center text-sm" style={{ color: colors.theme.foreground }}>
-              <div className="mr-2 inline-flex items-center justify-center w-4 h-4 relative">
-                <div
-                  className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
-                  style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
-                ></div>
-              </div>
-              <span>Saving...</span>
-            </div>
-          )}
-          {!Object.values(savingFields).some(Boolean) && !isSubmitted && (
-            <div className="flex items-center text-sm" style={{ color: colors.theme.foreground }}>
-              <Save className="h-4 w-4 mr-2" style={{ color: colors.theme.success }} />
-              <span>All changes saved</span>
-            </div>
-          )}
-          <Button
-            type="submit"
-            disabled={isSubmitted}
-            className="transition-all duration-300 font-medium relative overflow-hidden"
-            style={{
-              backgroundColor: colors.theme.primary,
-              color: colors.theme.buttonText,
-            }}
-          >
-            {isSubmitted ? "Application Submitted" : "Submit Application"}
-          </Button>
-        </div>
+        {!isSubmitted && (
+          <div className="flex justify-end pt-4">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              style={buttonStyles}
+
+              className="px-8 py-3 text-lg font-semibold"
+            >
+              {isLoading ? (
+                <>
+                  <div
+                    className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent border-current"
+                  ></div>
+                  Submitting...
+                </>
+              ) : (
+                "Submit Application"
+              )}
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   )
