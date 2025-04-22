@@ -15,7 +15,7 @@ import { debounce } from "@/lib/utils"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Check, Save } from "lucide-react"
-import colors from "@/lib/colors.json"
+import colors from "@/lib/colors"
 import applicationData from "@/lib/applicationData.json"
 
 // Dynamically build the schema based on applicationData.json
@@ -123,6 +123,37 @@ export default function ApplicationForm({
   console.log("[ApplicationForm] Component initialized with formData:", JSON.stringify(formData))
   console.log("[ApplicationForm] isSubmitted:", isSubmitted, "isLoading:", isLoading)
   
+  const inputStyles = {
+    backgroundColor: colors.theme.inputBackground,
+    borderColor: colors.theme.inputBorder,
+    color: colors.theme.inputText,
+  };
+  
+  const labelStyles = {
+    color: colors.theme.foreground,
+  };
+  
+  const sectionTitleStyles = {
+    color: colors.theme.primary,
+  };
+  
+  const sectionDescriptionStyles = {
+    color: colors.theme.foreground,
+  };
+  
+  const errorMessageStyles = {
+    color: colors.theme.danger,
+  };
+  
+  const buttonStyles = {
+    backgroundColor: colors.theme.primary,
+    color: colors.theme.buttonText,
+  };
+  
+
+
+
+
   const { toast } = useToast()
   const [savingFields, setSavingFields] = useState<Record<string, boolean>>({})
   const [savedFields, setSavedFields] = useState<Record<string, boolean>>({})
@@ -185,10 +216,12 @@ export default function ApplicationForm({
     if (savingFields[fieldName]) {
       return (
         <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
-          <div
-            className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
-          ></div>
+          
+     <div
+  className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
+  style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
+></div>
+
         </div>
       )
     }
@@ -200,29 +233,7 @@ export default function ApplicationForm({
     return null
   }
 
-  const inputStyles = {
-    backgroundColor: colors.theme.inputBackground,
-    borderColor: colors.theme.inputBorder,
-    color: colors.theme.inputText,
-  }
-
-  const labelStyles = {
-    color: colors.theme.foreground,
-    
-  }
-
-  const sectionTitleStyles = {
-    color: colors.theme.primary,
-  }
-
-  const sectionDescriptionStyles = {
-    color: colors.theme.foreground,
-  }
-
-  const errorMessageStyles = {
-    color: colors.theme.danger,
-  }
-
+ 
   const personalInfo = applicationData.formSchema.personalInfo
   const aboutYou = applicationData.formSchema.aboutYou
   const additionalInfoSection = applicationData.formSchema.additionalInfo
@@ -651,11 +662,8 @@ export default function ApplicationForm({
             <Button
               type="submit"
               disabled={isLoading}
-              style={{
-                backgroundColor: colors.theme.primary,
-                color: colors.theme.buttonText,
-                opacity: isLoading ? 0.7 : 1,
-              }}
+              style={buttonStyles}
+
               className="px-8 py-3 text-lg font-semibold"
             >
               {isLoading ? (
