@@ -210,28 +210,28 @@ export default function ApplicationForm({
     onSubmit()
   }
 
-  const renderSavingIndicator = (fieldName: string) => {
-    if (isSubmitted) return null
+//   const renderSavingIndicator = (fieldName: string) => {
+//     if (isSubmitted) return null
 
-    if (savingFields[fieldName]) {
-      return (
-        <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
+//     if (savingFields[fieldName]) {
+//       return (
+//         <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
           
-     <div
-  className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
-  style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
-></div>
+//      <div
+//   className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
+//   style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
+// ></div>
 
-        </div>
-      )
-    }
+//         </div>
+//       )
+//     }
 
-    if (savedFields[fieldName]) {
-      return <Check className="h-4 w-4 ml-2" style={{ color: colors.theme.success }} />
-    }
+//     if (savedFields[fieldName]) {
+//       return <Check className="h-4 w-4 ml-2" style={{ color: colors.theme.success }} />
+//     }
 
-    return null
-  }
+//     return null
+//   }
 
  
   const personalInfo = applicationData.formSchema.personalInfo
@@ -258,7 +258,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{personalInfo.fields.legalName.label}</FormLabel>
-                {renderSavingIndicator("legalName")}
+                {/* {renderSavingIndicator("legalName")} */}
               </div>
               <FormControl>
                 <Input
@@ -281,7 +281,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{personalInfo.fields.email.label}</FormLabel>
-                {renderSavingIndicator("email")}
+                {/* {renderSavingIndicator("email")} */}
               </div>
               <FormControl>
                 <Input
@@ -305,7 +305,7 @@ export default function ApplicationForm({
               <FormItem>
                 <div className="flex items-center">
                   <FormLabel style={labelStyles}>{personalInfo.fields.university.label}</FormLabel>
-                  {renderSavingIndicator("university")}
+                  {/* {renderSavingIndicator("university")} */}
                 </div>
                 <FormControl>
                   <Input
@@ -328,7 +328,7 @@ export default function ApplicationForm({
               <FormItem>
                 <div className="flex items-center">
                   <FormLabel style={labelStyles}>{personalInfo.fields.major.label}</FormLabel>
-                  {renderSavingIndicator("major")}
+                  {/* {renderSavingIndicator("major")} */}
                 </div>
                 <FormControl>
                   <Input
@@ -353,7 +353,7 @@ export default function ApplicationForm({
               <FormItem>
                 <div className="flex items-center">
                   <FormLabel style={labelStyles}>{personalInfo.fields.graduationYear.label}</FormLabel>
-                  {renderSavingIndicator("graduationYear")}
+                  {/* {renderSavingIndicator("graduationYear")} */}
                 </div>
                 <FormControl>
                   <Input
@@ -376,7 +376,7 @@ export default function ApplicationForm({
               <FormItem>
                 <div className="flex items-center">
                   <FormLabel style={labelStyles}>{personalInfo.fields.experience.label}</FormLabel>
-                  {renderSavingIndicator("experience")}
+                  {/* {renderSavingIndicator("experience")} */}
                 </div>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
                   <FormControl>
@@ -415,7 +415,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{aboutYou.fields.whyAttend.label}</FormLabel>
-                {renderSavingIndicator("whyAttend")}
+                {/* {renderSavingIndicator("whyAttend")} */}
               </div>
               <FormControl>
                 <Textarea
@@ -438,7 +438,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{aboutYou.fields.projectExperience.label}</FormLabel>
-                {renderSavingIndicator("projectExperience")}
+                {/* {renderSavingIndicator("projectExperience")} */}
               </div>
               <FormControl>
                 <Textarea
@@ -461,7 +461,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{aboutYou.fields.futurePlans.label}</FormLabel>
-                {renderSavingIndicator("futurePlans")}
+                {/* {renderSavingIndicator("futurePlans")} */}
               </div>
               <FormControl>
                 <Textarea
@@ -484,7 +484,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{aboutYou.fields.funFact.label}</FormLabel>
-                {renderSavingIndicator("funFact")}
+                {/* {renderSavingIndicator("funFact")} */}
               </div>
               <FormControl>
                 <Textarea
@@ -507,7 +507,7 @@ export default function ApplicationForm({
             <FormItem className="space-y-3">
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{aboutYou.fields.selfDescription.label}</FormLabel>
-                {renderSavingIndicator("selfDescription")}
+                {/* {renderSavingIndicator("selfDescription")} */}
               </div>
               <FormControl>
                 <RadioGroup
@@ -550,7 +550,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{additionalInfoSection.fields.links.label}</FormLabel>
-                {renderSavingIndicator("links")}
+                {/* {renderSavingIndicator("links")} */}
               </div>
               <FormControl>
                 <Textarea
@@ -573,7 +573,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label}</FormLabel>
-                {renderSavingIndicator("teammates")}
+                {/* {renderSavingIndicator("teammates")} */}
               </div>
               <FormControl>
                 <Textarea
@@ -596,7 +596,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label}</FormLabel>
-                {renderSavingIndicator("referralEmail")}
+                {/* {renderSavingIndicator("referralEmail")} */}
               </div>
               <FormControl>
                 <Input
@@ -619,7 +619,7 @@ export default function ApplicationForm({
             <FormItem>
               <div className="flex items-center">
                 <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictions.label}</FormLabel>
-                {renderSavingIndicator("dietaryRestrictions")}
+                {/* {renderSavingIndicator("dietaryRestrictions")} */}
               </div>
               <FormControl>
                 <Textarea
