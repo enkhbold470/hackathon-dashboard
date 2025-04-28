@@ -15,7 +15,7 @@
           }
         },
         "email": {
-          "label": "Email",
+          "label": "Preferred Email:",
           "type": "email",
           "placeholder": "you@example.com",
           "validationRules": {
@@ -35,9 +35,9 @@
           }
         },
         "major": {
-          "label": "Major",
+          "label": "Major (Won't affect the application decision)",
           "type": "text",
-          "placeholder": "Your field of study",
+          "placeholder": "Type your major",
           "validationRules": {
             "required": true,
             "minLength": 2,
@@ -55,7 +55,7 @@
           }
         },
         "experience": {
-          "label": "Coding Experience",
+          "label": "Coding Exp (Won't affect the application decision) ",
           "type": "select",
           "options": [
             { "value": "beginner", "label": "Beginner (< 1 year)" },
