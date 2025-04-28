@@ -12,8 +12,8 @@ import {
 } from '@clerk/nextjs'
 import colors from "@/lib/colors"
 export const metadata: Metadata = {
-  title: "Typescript App",
-  description: "Created with Nextjs",
+  title: "DA Hacks 3.5 Portal",
+  description: "Apply as a Hacker here!",
   generator: "Typescript",
 };
 
