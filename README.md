@@ -123,3 +123,83 @@ etc
 ## License
 
 MIT 
+
+# Hackathon Dashboard
+
+A dashboard for hackathon application management.
+
+## Database Setup
+
+This application uses PostgreSQL for storing application data.
+
+### 1. Install PostgreSQL
+
+If you don't have PostgreSQL installed:
+
+- **macOS**: `brew install postgresql@15` and `brew services start postgresql@15`
+- **Linux**: `sudo apt install postgresql`
+- **Windows**: Download from [postgresql.org](https://www.postgresql.org/download/windows/)
+
+### 2. Create a Database
+
+```bash
+# Connect to PostgreSQL
+psql postgres
+
+# Create a database
+CREATE DATABASE hackathon_db;
+
+# Create a user (replace 'username' and 'password')
+CREATE USER username WITH ENCRYPTED PASSWORD 'password';
+
+# Grant privileges
+GRANT ALL PRIVILEGES ON DATABASE hackathon_db TO username;
+
+# Connect to the new database
+\c hackathon_db
+
+# Grant schema privileges to the user
+GRANT ALL ON SCHEMA public TO username;
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```
+# Database connection
+DATABASE_URL=postgresql://username:password@localhost:5432/hackathon_db
+
+# Clerk authentication keys
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
+CLERK_SECRET_KEY=your_secret_key
+```
+
+### 4. Initialize the Database
+
+Run the initialization script to create the necessary tables:
+
+```bash
+pnpm node scripts/init-db.js
+```
+
+## Development
+
+Install dependencies:
+
+```bash
+pnpm install
+```
+
+Run the development server:
+
+```bash
+pnpm dev
+```
+
+## Production Build
+
+```bash
+pnpm build
+pnpm start
+``` 
