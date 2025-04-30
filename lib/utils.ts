@@ -5,10 +5,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null
+// Define an interface for the debounced function with cancel method
+interface DebouncedFunction<T extends (...args: any[]) => any> {
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+}
 
-  return (...args: Parameters<T>) => {
+export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): DebouncedFunction<T> {
+  let timeout: ReturnType<typeof setTimeout> | null = null
+  
+  const debouncedFn = ((...args: Parameters<T>) => {
     const later = () => {
       timeout = null
       func(...args)
@@ -18,5 +24,15 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
       clearTimeout(timeout)
     }
     timeout = setTimeout(later, wait)
+  }) as DebouncedFunction<T>
+
+  // Add cancel method to the debounced function
+  debouncedFn.cancel = () => {
+    if (timeout !== null) {
+      clearTimeout(timeout)
+      timeout = null
+    }
   }
+
+  return debouncedFn
 }

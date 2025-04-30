@@ -3,13 +3,12 @@ import type { Config } from "tailwindcss";
 const config = {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
-    "*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{ts,tsx}",
   ],
-  prefix: "",
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     container: {
       center: true,
@@ -79,7 +78,6 @@ const config = {
         "2xl": "1.75rem",
         "3xl": "2rem",
       },
-     
     },
     fontFamily: {
       sans: ['"Open Sans"', "sans-serif"],

@@ -1,106 +1,69 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useMemo, memo } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
-import { debounce } from "@/lib/utils"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Check, Save } from "lucide-react"
+import { Check } from "lucide-react"
 import colors from "@/lib/colors"
 import { applicationData, toDbColumn } from "@/lib/applicationData"
+import React from "react"
 
-// Dynamically build the schema based on applicationData.json
-const buildSchema = () => {
-  console.log("[ApplicationForm] Building form schema from config")
+// Schema builder - static function instead of useMemo
+const buildFormSchema = () => {
   let schema: Record<string, any> = {}
 
-  // Helper function to process fields
   const processFields = (fields: Record<string, any>) => {
     Object.entries(fields).forEach(([fieldName, fieldConfig]) => {
-      let fieldSchema: any = z.any() // Default to any
-      const validationRules = fieldConfig.validationRules || {}
-
-      switch (fieldConfig.type) {
-        case "text":
-        case "email":
-        case "textarea":
-          fieldSchema = z.string()
-          if (validationRules.required) {
-            fieldSchema = fieldSchema.min(1, { 
-              message: validationRules.message || "This field is required." 
-            })
-          }
-          if (validationRules.minLength) {
-            fieldSchema = fieldSchema.min(validationRules.minLength, { 
-              message: validationRules.message || `Min length is ${validationRules.minLength}` 
-            })
-          }
-          if (fieldConfig.type === "email" && validationRules.email) {
-            fieldSchema = fieldSchema.email({ 
-              message: validationRules.message || "Invalid email format" 
-            })
-          }
-          break
-        case "select":
-        case "radio":
-          fieldSchema = z.string()
-          if (validationRules.required) {
-            fieldSchema = fieldSchema.min(1, { 
-              message: validationRules.message || "Please make a selection." 
-            })
-          }
-          break
-        case "checkbox":
-          fieldSchema = z.boolean()
-          if (validationRules.required && validationRules.value === true) {
-            fieldSchema = fieldSchema.refine((val: boolean) => val === true, {
-              message: validationRules.message || "This checkbox is required",
-            })
-          }
-          break
-        default:
-          // Fallback for unknown types or optional fields
-          fieldSchema = z.string().optional()
-      }
-      
-      // Handle optional fields explicitly
-      if (!validationRules.required) {
-        fieldSchema = fieldSchema.optional()
-      }
-
-      // Map field names to database column names
       const dbFieldName = toDbColumn(fieldName);
-      schema[dbFieldName] = fieldSchema
+      const validationRules = fieldConfig.validationRules || {}
+      
+      if (fieldConfig.type === "checkbox") {
+        let fieldSchema = z.boolean()
+        if (validationRules.required && validationRules.value === true) {
+          schema[dbFieldName] = fieldSchema.refine((val: boolean) => val === true, {
+            message: validationRules.message || "This checkbox is required",
+          })
+        } else {
+          schema[dbFieldName] = fieldSchema
+        }
+      } else if (fieldConfig.type === "email" && validationRules.required) {
+        schema[dbFieldName] = z.string().email({ message: validationRules.message || "Invalid email format" })
+          .min(1, { message: validationRules.message || "This field is required." })
+      } else if (validationRules.required) {
+        let fieldSchema = z.string().min(1, { message: validationRules.message || "This field is required." })
+        if (validationRules.minLength) {
+          fieldSchema = fieldSchema.min(validationRules.minLength, { 
+            message: validationRules.message || `Min length is ${validationRules.minLength}` 
+          })
+        }
+        schema[dbFieldName] = fieldSchema
+      } else {
+        schema[dbFieldName] = z.string().nullable().optional()
+      }
     })
   }
 
-  // Process all sections
-  if (applicationData.personalInfo?.fields) {
-    processFields(applicationData.personalInfo.fields)
-  }
-  
-  if (applicationData.aboutYou?.fields) {
-    processFields(applicationData.aboutYou.fields)
-  }
-  
-  if (applicationData.additionalInfo?.fields) {
-    processFields(applicationData.additionalInfo.fields)
-  }
+  Object.values(applicationData).forEach(section => {
+    if (section.fields) {
+      processFields(section.fields)
+    }
+  })
 
-  console.log("[ApplicationForm] Schema build complete")
   return z.object(schema)
 }
 
-const formSchema = buildSchema()
+// Create the schema statically
+const formSchema = buildFormSchema();
 
 type FormData = z.infer<typeof formSchema>
 
@@ -112,658 +75,349 @@ interface ApplicationFormProps {
   isLoading: boolean
 }
 
-// Initialize default values from JSON schema if available
+// Field option type
+interface FieldOption {
+  value: string;
+  label: string;
+}
+
+// Default values function - static function
 const getDefaultValues = () => {
-  console.log("[ApplicationForm] Initializing default form values")
   let defaults: Record<string, any> = {}
   
-  // Helper function to process fields for defaults
-  const processFields = (fields: Record<string, any>) => {
-    Object.entries(fields).forEach(([fieldName, fieldConfig]) => {
-      const dbFieldName = toDbColumn(fieldName);
-      
-      switch (fieldConfig.type) {
-        case "text":
-        case "email":
-        case "textarea":
-        case "select":
-        case "radio":
-          defaults[dbFieldName] = ""
-          break
-        case "checkbox":
+  Object.values(applicationData).forEach(section => {
+    if (section.fields) {
+      Object.entries(section.fields).forEach(([fieldName, fieldConfig]) => {
+        const dbFieldName = toDbColumn(fieldName);
+        const validationRules = fieldConfig.validationRules || {}
+        
+        if (fieldConfig.type === "checkbox") {
           defaults[dbFieldName] = false
-          break
-        default:
-          defaults[dbFieldName] = "" // Default empty string for others
-      }
-    })
-  }
+        } else {
+          defaults[dbFieldName] = validationRules.required ? "" : null
+        }
+      })
+    }
+  })
   
-  // Process all sections
-  if (applicationData.personalInfo?.fields) {
-    processFields(applicationData.personalInfo.fields)
-  }
-  
-  if (applicationData.aboutYou?.fields) {
-    processFields(applicationData.aboutYou.fields)
-  }
-  
-  if (applicationData.additionalInfo?.fields) {
-    processFields(applicationData.additionalInfo.fields)
-  }
-  
-  console.log("[ApplicationForm] Default values created")
   return defaults
 }
 
-export default function ApplicationForm({
+// Memoized form field component to prevent re-renders
+const FormFieldComponent = memo(({ 
+  fieldName,
+  fieldConfig,
+  control,
+  isSubmitted,
+  isLoading,
+  handleFieldChange,
+  renderSavingIndicator,
+  styles
+}: {
+  fieldName: string,
+  fieldConfig: any,
+  control: any,
+  isSubmitted: boolean,
+  isLoading: boolean,
+  handleFieldChange: (name: string, value: any) => void,
+  renderSavingIndicator: (name: string) => React.ReactNode,
+  styles: any
+}) => {
+  const dbFieldName = toDbColumn(fieldName);
+  
+  return (
+    <div className="relative">
+      <FormField
+        control={control}
+        name={dbFieldName}
+        render={({ field }) => {
+          switch (fieldConfig.type) {
+            case "text":
+            case "email":
+              return (
+                <FormItem>
+                  <FormLabel style={styles.label}>
+                    {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder={fieldConfig.placeholder}
+                      style={styles.input}
+                      onChange={(e) => {
+                        field.onChange(e)
+                        handleFieldChange(dbFieldName, e.target.value)
+                      }}
+                      type={fieldConfig.type}
+                      disabled={isSubmitted || isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage style={styles.errorMessage} />
+                </FormItem>
+              )
+              
+            case "textarea":
+              return (
+                <FormItem>
+                  <FormLabel style={styles.label}>
+                    {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder={fieldConfig.placeholder}
+                      style={styles.input}
+                      onChange={(e) => {
+                        field.onChange(e)
+                        handleFieldChange(dbFieldName, e.target.value)
+                      }}
+                      disabled={isSubmitted || isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage style={styles.errorMessage} />
+                </FormItem>
+              )
+              
+            case "select":
+              return (
+                <FormItem>
+                  <FormLabel style={styles.label}>
+                    {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                  </FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value)
+                      handleFieldChange(dbFieldName, value)
+                    }}
+                    defaultValue={field.value}
+                    disabled={isSubmitted || isLoading}
+                  >
+                    <FormControl>
+                      <SelectTrigger style={styles.input}>
+                        <SelectValue placeholder={fieldConfig.placeholder} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {fieldConfig.options?.map((option: FieldOption) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage style={styles.errorMessage} />
+                </FormItem>
+              )
+              
+            case "radio":
+              return (
+                <FormItem>
+                  <FormLabel style={styles.label}>
+                    {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                  </FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={(value) => {
+                        field.onChange(value)
+                        handleFieldChange(dbFieldName, value)
+                      }}
+                      defaultValue={field.value}
+                      disabled={isSubmitted || isLoading}
+                      className="flex flex-col space-y-2"
+                    >
+                      {fieldConfig.options?.map((option: FieldOption) => (
+                        <div key={option.value} className="flex items-center space-x-2">
+                          <RadioGroupItem value={option.value} id={`${fieldName}-${option.value}`} />
+                          <Label htmlFor={`${fieldName}-${option.value}`}>{option.label}</Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage style={styles.errorMessage} />
+                </FormItem>
+              )
+              
+            case "checkbox":
+              return (
+                <FormItem>
+                  <div className="flex items-center space-x-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked)
+                          handleFieldChange(dbFieldName, checked)
+                        }}
+                        disabled={isSubmitted || isLoading}
+                      />
+                    </FormControl>
+                    <FormLabel style={styles.label} className="text-sm font-medium">
+                      {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                      {fieldName === "agreeToTerms" && (
+                        <span className="text-blue-500 cursor-pointer">
+                          Terms and Conditions
+                        </span>
+                      )}
+                    </FormLabel>
+                  </div>
+                  <FormMessage style={styles.errorMessage} />
+                </FormItem>
+              )
+              
+            default:
+              return (
+                <FormItem>
+                  <FormLabel style={styles.label}>
+                    {fieldConfig.label} - Unsupported field type
+                  </FormLabel>
+                </FormItem>
+              )
+          }
+        }}
+      />
+    </div>
+  );
+});
+
+FormFieldComponent.displayName = 'FormFieldComponent';
+
+function ApplicationForm({
   onChange,
   onSubmit,
   formData,
   isSubmitted,
   isLoading,
 }: ApplicationFormProps) {
-  console.log("[ApplicationForm] Component initialized with formData:", JSON.stringify(formData))
-  console.log("[ApplicationForm] isSubmitted:", isSubmitted, "isLoading:", isLoading)
-  
-  const inputStyles = {
-    backgroundColor: colors.theme.inputBackground,
-    borderColor: colors.theme.inputBorder,
-    color: colors.theme.inputText,
-  };
-  
-  const labelStyles = {
-    color: colors.theme.foreground,
-  };
-  
-  const sectionTitleStyles = {
-    color: colors.theme.primary,
-  };
-  
-  const sectionDescriptionStyles = {
-    color: colors.theme.foreground,
-  };
-  
-  const errorMessageStyles = {
-    color: colors.theme.danger,
-  };
-  
-  const buttonStyles = {
-    backgroundColor: colors.theme.primary,
-    color: colors.theme.buttonText,
-  };
-  
   const { toast } = useToast()
   const [savingFields, setSavingFields] = useState<Record<string, boolean>>({})
   const [savedFields, setSavedFields] = useState<Record<string, boolean>>({})
+  
+  // Memoized styles to prevent recalculation - properly inside component
+  const styles = useMemo(() => ({
+    input: {
+      backgroundColor: colors.theme.inputBackground,
+      borderColor: colors.theme.inputBorder,
+      color: colors.theme.inputText,
+    },
+    label: {
+      color: colors.theme.foreground,
+    },
+    sectionTitle: {
+      color: colors.theme.primary,
+    },
+    sectionDescription: {
+      color: colors.theme.foreground,
+    },
+    errorMessage: {
+      color: colors.theme.danger,
+    },
+    button: {
+      backgroundColor: colors.theme.primary,
+      color: colors.theme.buttonText,
+    }
+  }), []);
 
+  // Saving indicator component
   const renderSavingIndicator = (fieldName: string) => {
-    if (isSubmitted) return null
-    console.log("[ApplicationForm] renderSavingIndicator", fieldName, savingFields[fieldName], savedFields[fieldName])
-
-    // if (savingFields[fieldName]) {
-    //   return (
-    //     <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
-    //       <div
-    //         className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
-    //         style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
-    //       ></div>
-    //     </div>
-    //   )
-    // }
-
-    // if (savedFields[fieldName]) {
-    //   return <Check className="h-4 w-4 ml-2" style={{ color: colors.theme.success }} />
-    // }
-
+    if (savingFields[fieldName]) {
+      return <span className="inline-block ml-2">Saving...</span>
+    } else if (savedFields[fieldName]) {
+      return (
+        <span className="inline-block ml-2 text-green-500">
+          <Check size={16} />
+        </span>
+      )
+    }
     return null
   }
 
+  // Initialize form with default values and form data
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      ...getDefaultValues(), // Use generated defaults
-      ...formData, // Override with existing formData
-    },
+    defaultValues: { ...getDefaultValues(), ...formData },
+    mode: "onChange"
   })
 
-  // Initialize form with existing data
-  useEffect(() => {
-    if (Object.keys(formData).length > 0) {
-      console.log("[ApplicationForm] Resetting form with existing data")
-      form.reset(formData)
+  // Handle field change for auto-save
+  const handleFieldChange = async (name: string, value: any) => {
+    setSavingFields(prev => ({ ...prev, [name]: true }))
+    
+    try {
+      const formValues = form.getValues()
+      await onChange({ ...formValues, [name]: value })
+      setSavedFields(prev => ({ ...prev, [name]: true }))
+      
+      // Clear saved indicator after 2 seconds
+      setTimeout(() => {
+        setSavedFields(prev => ({ ...prev, [name]: false }))
+      }, 2000)
+    } catch (error) {
+      toast({
+        title: "Error saving changes",
+        description: "Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setSavingFields(prev => ({ ...prev, [name]: false }))
     }
-  }, [])
+  }
 
-  // Debounced save function for real-time saving
-  const debouncedSave = debounce((data: FormData, field: string) => {
-    console.log(`[ApplicationForm] Saving field "${field}" with debounced save`)
-    onChange(data)
-    setSavingFields((prev) => ({ ...prev, [field]: false }))
-    setSavedFields((prev) => ({ ...prev, [field]: true }))
-
-    // Reset saved indicator after 15 seconds
-    setTimeout(() => {
-      setSavedFields((prev) => ({ ...prev, [field]: false }))
-    }, 15000)
-  }, 15000)
-
-  // Watch for form changes and save in real-time
-  useEffect(() => {
-    console.log("[ApplicationForm] Setting up form change watcher")
-    const subscription = form.watch((data, { name }) => {
-      if (name) {
-        console.log(`[ApplicationForm] Field "${name}" changed, scheduling save`)
-        setSavingFields((prev) => ({ ...prev, [name]: true }))
-        debouncedSave(data as FormData, name)
-      }
-    })
-
-    return () => {
-      console.log("[ApplicationForm] Cleaning up form watcher subscription")
-      subscription.unsubscribe()
-    }
-  }, [form.watch])
-
+  // Submit form handler
   const handleSubmit = (data: FormData) => {
-    console.log("[ApplicationForm] Form submit handler called with data:", JSON.stringify(data))
-    onChange(data)
     onSubmit()
   }
 
-  const personalInfo = applicationData.personalInfo
-  const aboutYou = applicationData.aboutYou
-  const additionalInfoSection = applicationData.additionalInfo
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2">
-        {/* Personal Information Section */}
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold" style={sectionTitleStyles}>
-            {personalInfo.title}
-          </h2>
-          <p className="text-sm" style={sectionDescriptionStyles}>
-            {personalInfo.description}
-          </p>
-          <p className="text-sm" style={{ color: colors.theme.danger }}>
-            {/* Fields marked with <span className="text-red-500">*</span> are required. */}
-          </p>
-        </div>
-
-        <FormField
-          control={form.control}
-          name="full_name"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{personalInfo.fields.fullName.label} {personalInfo.fields.fullName.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                {renderSavingIndicator("full_name")}
-              </div>
-              <FormControl>
-                <Input
-                  placeholder={personalInfo.fields.fullName.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                  required
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        {/* Render sections and fields */}
+        {Object.entries(applicationData).map(([sectionKey, section]) => (
+          <div key={sectionKey} className="bg-white/5 p-6 rounded-lg mb-8">
+            <h2 className="text-2xl font-bold mb-2" style={styles.sectionTitle}>
+              {section.title}
+            </h2>
+            <p className="mb-6" style={styles.sectionDescription}>
+              {section.description}
+            </p>
+            
+            <div className="space-y-6">
+              {section.fields && Object.entries(section.fields).map(([fieldName, fieldConfig]) => (
+                <FormFieldComponent
+                  key={fieldName}
+                  fieldName={fieldName}
+                  fieldConfig={fieldConfig}
+                  control={form.control}
+                  isSubmitted={isSubmitted}
+                  isLoading={isLoading}
+                  handleFieldChange={handleFieldChange}
+                  renderSavingIndicator={renderSavingIndicator}
+                  styles={styles}
                 />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="discord"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{personalInfo.fields.discord.label} {personalInfo.fields.discord.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                {renderSavingIndicator("discord")}
-              </div>
-              <FormControl>
-                <Input
-                  placeholder={personalInfo.fields.discord.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="cwid"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.cwid.label} {personalInfo.fields.cwid.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                  {renderSavingIndicator("cwid")}
-                </div>
-                <FormControl>
-                  <Input
-                    placeholder={personalInfo.fields.cwid.placeholder}
-                    {...field}
-                    disabled={isSubmitted}
-                    style={inputStyles}
-                    className="placeholder:text-opacity-50"
-                    required
-                  />
-                </FormControl>
-                <FormMessage style={errorMessageStyles} />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="skill_level"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.skillLevel.label} {personalInfo.fields.skillLevel.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                  {renderSavingIndicator("skill_level")}
-                </div>
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
-                  <FormControl>
-                    <SelectTrigger style={inputStyles}>
-                      <SelectValue placeholder={personalInfo.fields.skillLevel.placeholder} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {personalInfo.fields.skillLevel.options.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage style={errorMessageStyles} />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="hear_about_us"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.hearAboutUs.label} {personalInfo.fields.hearAboutUs.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                  {renderSavingIndicator("hear_about_us")}
-                </div>
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
-                  <FormControl>
-                    <SelectTrigger style={inputStyles}>
-                      <SelectValue placeholder={personalInfo.fields.hearAboutUs.placeholder} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {personalInfo.fields.hearAboutUs.options.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage style={errorMessageStyles} />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="hackathon_experience"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.hackathonExperience.label} {personalInfo.fields.hackathonExperience.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                  {renderSavingIndicator("hackathon_experience")}
-                </div>
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
-                  <FormControl>
-                    <SelectTrigger style={inputStyles}>
-                      <SelectValue placeholder={personalInfo.fields.hackathonExperience.placeholder} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {personalInfo.fields.hackathonExperience.options.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage style={errorMessageStyles} />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* About You Section */}
-        <div className="space-y-2 pt-4">
-          <h2 className="text-xl font-semibold" style={sectionTitleStyles}>
-            {aboutYou.title}
-          </h2>
-          <p className="text-sm" style={sectionDescriptionStyles}>
-            {aboutYou.description}
-          </p>
-        </div>
-
-        <FormField
-          control={form.control}
-          name="why_attend"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.whyAttend.label} {aboutYou.fields.whyAttend.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                {renderSavingIndicator("why_attend")}
-              </div>
-              <FormControl>
-                <Textarea
-                  placeholder={aboutYou.fields.whyAttend.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="project_experience"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.projectExperience.label} {aboutYou.fields.projectExperience.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                {renderSavingIndicator("project_experience")}
-              </div>
-              <FormControl>
-                <Textarea
-                  placeholder={aboutYou.fields.projectExperience.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="future_plans"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.futurePlans.label} {aboutYou.fields.futurePlans.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                {renderSavingIndicator("future_plans")}
-              </div>
-              <FormControl>
-                <Textarea
-                  placeholder={aboutYou.fields.futurePlans.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="fun_fact"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.funFact.label} {aboutYou.fields.funFact.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                {renderSavingIndicator("fun_fact")}
-              </div>
-              <FormControl>
-                <Textarea
-                  placeholder={aboutYou.fields.funFact.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="self_description"
-          render={({ field }) => (
-            <FormItem className="space-y-3">
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.selfDescription.label} {aboutYou.fields.selfDescription.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
-                {renderSavingIndicator("self_description")}
-              </div>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-col space-y-1"
-                  disabled={isSubmitted}
-                >
-                  {aboutYou.fields.selfDescription.options.map((option) => (
-                    <FormItem key={option.value} className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <RadioGroupItem value={option.value} />
-                      </FormControl>
-                      <FormLabel className="font-normal" style={labelStyles}>
-                        {option.label}
-                      </FormLabel>
-                    </FormItem>
-                  ))}
-                </RadioGroup>
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        {/* Additional Information Section */}
-        <div className="space-y-2 pt-4">
-          <h2 className="text-xl font-semibold" style={sectionTitleStyles}>
-            {additionalInfoSection.title}
-          </h2>
-          <p className="text-sm" style={sectionDescriptionStyles}>
-            {additionalInfoSection.description}
-          </p>
-        </div>
-
-        <FormField
-          control={form.control}
-          name="links"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.links.label} {additionalInfoSection.fields.links.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
-                {renderSavingIndicator("links")}
-              </div>
-              <FormControl>
-                <Textarea
-                  placeholder={additionalInfoSection.fields.links.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="teammates"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label} {additionalInfoSection.fields.teammates.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
-                {renderSavingIndicator("teammates")}
-              </div>
-              <FormControl>
-                <Textarea
-                  placeholder={additionalInfoSection.fields.teammates.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="referral_email"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label} {additionalInfoSection.fields.referralEmail.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
-                {renderSavingIndicator("referral_email")}
-              </div>
-              <FormControl>
-                <Input
-                  placeholder={additionalInfoSection.fields.referralEmail.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="dietary_restrictions_extra"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictionsExtra.label} {additionalInfoSection.fields.dietaryRestrictionsExtra.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
-                {renderSavingIndicator("dietary_restrictions_extra")}
-              </div>
-              <FormControl>
-                <Textarea
-                  placeholder={additionalInfoSection.fields.dietaryRestrictionsExtra.placeholder}
-                  {...field}
-                  disabled={isSubmitted}
-                  style={inputStyles}
-                  className="placeholder:text-opacity-50"
-                />
-              </FormControl>
-              <FormMessage style={errorMessageStyles} />
-            </FormItem>
-          )}
-        />
-
-        {/* * type your name to sign the code of conduct and media waivers
-        <div className="space-y-2">
-          <FormLabel style={labelStyles}>
-            {additionalInfoSection.fields.name.label}
-            {additionalInfoSection.fields.name.validationRules.required && (
-              <span className="text-red-500">*</span>
-            )}
-          </FormLabel>
-          <Input
-            placeholder={additionalInfoSection.fields.name.placeholder}
-            disabled={isSubmitted}
-            style={{
-              ...inputStyles,
-              fontFamily: 'cursive',
-              fontStyle: 'italic',
-              fontSize: '1.4rem',
-            }}
-            className="placeholder:text-opacity-50"
-            onChange={(e) => {
-              // Just update the local state without form control
-              const value = e.target.value.toUpperCase();
-              // You can store this in a local state if needed
-              // setLocalSignature(value);
-            }}
-          />
-        </div> */}
-        <FormField
-          control={form.control}
-          name="agree_to_terms"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow"
-              style={{ borderColor: isSubmitted ? colors.theme.success : colors.theme.inputBorder }}
-            >
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isSubmitted}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label} {" "}
-                <a href="https://github.com/da-hacks/legal/blob/4eb1f4413cdfa7fce2f5914db4786d89b2113176/code_of_conduct.md" target="_blank" style={{ color: colors.theme.linkText }}>Code of Conduct</a> and
-                <a href="https://github.com/da-hacks/legal/blob/4eb1f4413cdfa7fce2f5914db4786d89b2113176/media-waiver.md" target="_blank" style={{ color: colors.theme.linkText }}>{" "}Media Waivers</a>
-                {additionalInfoSection.fields.agreeToTerms.validationRules.required ? <span className="text-red-500">*</span> : null} 
-                </FormLabel>
-                <FormMessage style={errorMessageStyles} />
-              </div>
-            </FormItem>
-          )}
-        />
-        
-        
-
-        {!isSubmitted && (
-          <div className="flex justify-end pt-4">
-            <Button
-              type="submit"
-              disabled={isLoading}
-              style={buttonStyles}
-
-              className="px-8 py-3 text-lg font-semibold"
-            >
-              {isLoading ? (
-                <>
-                  <div
-                    className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent border-current"
-                  ></div>
-                  Submitting...
-                </>
-              ) : (
-                "Submit Application"
-              )}
-            </Button>
+              ))}
+            </div>
           </div>
-        )}
+        ))}
+        
+        {/* Submit button */}
+        <div className="sticky bottom-0 bg-background p-4 border-t border-border z-10">
+          <Button 
+            type="submit"
+            disabled={isSubmitted || isLoading || !form.formState.isValid} 
+            className="w-full"
+            style={styles.button}
+          >
+            {isLoading ? "Processing..." : isSubmitted ? "Submitted" : "Submit Application"}
+          </Button>
+          
+          {!form.formState.isValid && (
+            <p className="text-sm text-red-500 mt-2">
+              Please fill in all required fields correctly before submitting.
+            </p>
+          )}
+        </div>
       </form>
     </Form>
   )
 }
+
+export default memo(ApplicationForm);

@@ -178,6 +178,21 @@ export const applicationData = {
           required: true
         }
       },
+      tshirtSize: {
+        label: "👕 T-Shirt Size (optional)",
+        type: "select",
+        options: [
+          { value: "S", label: "Small" },
+          { value: "M", label: "Medium" },
+          { value: "L", label: "Large" },
+          { value: "XL", label: "X-Large" },
+          { value: "XXL", label: "XX-Large" }
+        ],
+        placeholder: "Select your T-shirt size",
+        validationRules: {
+          required: true
+        }
+      },
       agreeToTerms: {
         label: "I agree to the ",
         type: "checkbox",
@@ -198,6 +213,8 @@ export const formToDbMapping = {
   skillLevel: "skill_level",
   hackathonExperience: "hackathon_experience",
   hearAboutUs: "hear_about_us",
+  cwid: "cwid",
+  discord: "discord",
   
   // About you
   whyAttend: "why_attend",
@@ -209,7 +226,8 @@ export const formToDbMapping = {
   // Additional info
   referralEmail: "referral_email",
   dietaryRestrictionsExtra: "dietary_restrictions_extra",
-  agreeToTerms: "agree_to_terms"
+  agreeToTerms: "agree_to_terms",
+  tshirtSize: "tshirt_size"
 };
 
 // Convert camelCase form field to snake_case DB column
@@ -225,7 +243,7 @@ export const toFormField = (dbColumn: string): string => {
   });
   return reversed[dbColumn] || dbColumn;
 };
-
+// important to add the statuses 
 export const applicationStatus = {
   statusDetails: {
     not_started: {

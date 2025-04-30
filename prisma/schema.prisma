@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id                        Int      @id @default(autoincrement())
+  userId                    String   @map("user_id") @unique
+  cwid                      String?
+  fullName                  String?  @map("full_name")
+  discord                   String?
+  skillLevel                String?  @map("skill_level")
+  hackathonExperience       String?  @map("hackathon_experience")
+  hearAboutUs               String?  @map("hear_about_us")
+  whyAttend                 String?  @map("why_attend")
+  projectExperience         String?  @map("project_experience")
+  futurePlans               String?  @map("future_plans")
+  funFact                   String?  @map("fun_fact")
+  selfDescription           String?  @map("self_description")
+  links                     String?
+  teammates                 String?
+  referralEmail             String?  @map("referral_email")
+  dietaryRestrictionsExtra  String?  @map("dietary_restrictions_extra")
+  tshirtSize                String?  @map("tshirt_size")
+  agreeToTerms              Boolean  @default(false) @map("agree_to_terms")
+  status                    String   @default("not_started")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  @@map("applications")
+}
