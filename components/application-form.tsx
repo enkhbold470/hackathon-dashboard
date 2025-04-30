@@ -16,44 +16,54 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Check, Save } from "lucide-react"
 import colors from "@/lib/colors"
-import applicationData from "@/lib/applicationData.json"
+import { applicationData, toDbColumn } from "@/lib/applicationData"
 
 // Dynamically build the schema based on applicationData.json
 const buildSchema = () => {
   console.log("[ApplicationForm] Building form schema from config")
   let schema: Record<string, any> = {}
 
-  Object.values(applicationData.formSchema).forEach((section) => {
-    Object.entries(section.fields).forEach(([fieldName, fieldConfig]) => {
+  // Helper function to process fields
+  const processFields = (fields: Record<string, any>) => {
+    Object.entries(fields).forEach(([fieldName, fieldConfig]) => {
       let fieldSchema: any = z.any() // Default to any
+      const validationRules = fieldConfig.validationRules || {}
 
       switch (fieldConfig.type) {
         case "text":
         case "email":
         case "textarea":
           fieldSchema = z.string()
-          if (fieldConfig.validationRules.required) {
-            fieldSchema = fieldSchema.min(1, { message: fieldConfig.validationRules.message || "This field is required." })
+          if (validationRules.required) {
+            fieldSchema = fieldSchema.min(1, { 
+              message: validationRules.message || "This field is required." 
+            })
           }
-          if (fieldConfig.validationRules.minLength) {
-            fieldSchema = fieldSchema.min(fieldConfig.validationRules.minLength, { message: fieldConfig.validationRules.message })
+          if (validationRules.minLength) {
+            fieldSchema = fieldSchema.min(validationRules.minLength, { 
+              message: validationRules.message || `Min length is ${validationRules.minLength}` 
+            })
           }
-          if (fieldConfig.type === "email" && fieldConfig.validationRules.email) {
-            fieldSchema = fieldSchema.email({ message: fieldConfig.validationRules.message })
+          if (fieldConfig.type === "email" && validationRules.email) {
+            fieldSchema = fieldSchema.email({ 
+              message: validationRules.message || "Invalid email format" 
+            })
           }
           break
         case "select":
         case "radio":
           fieldSchema = z.string()
-          if (fieldConfig.validationRules.required) {
-            fieldSchema = fieldSchema.min(1, { message: fieldConfig.validationRules.message || "Please make a selection." })
+          if (validationRules.required) {
+            fieldSchema = fieldSchema.min(1, { 
+              message: validationRules.message || "Please make a selection." 
+            })
           }
           break
         case "checkbox":
           fieldSchema = z.boolean()
-          if (fieldConfig.validationRules.required && fieldConfig.validationRules.value === true) {
+          if (validationRules.required && validationRules.value === true) {
             fieldSchema = fieldSchema.refine((val: boolean) => val === true, {
-              message: fieldConfig.validationRules.message,
+              message: validationRules.message || "This checkbox is required",
             })
           }
           break
@@ -63,13 +73,28 @@ const buildSchema = () => {
       }
       
       // Handle optional fields explicitly
-      if (!fieldConfig.validationRules.required) {
+      if (!validationRules.required) {
         fieldSchema = fieldSchema.optional()
       }
 
-      schema[fieldName] = fieldSchema
+      // Map field names to database column names
+      const dbFieldName = toDbColumn(fieldName);
+      schema[dbFieldName] = fieldSchema
     })
-  })
+  }
+
+  // Process all sections
+  if (applicationData.personalInfo?.fields) {
+    processFields(applicationData.personalInfo.fields)
+  }
+  
+  if (applicationData.aboutYou?.fields) {
+    processFields(applicationData.aboutYou.fields)
+  }
+  
+  if (applicationData.additionalInfo?.fields) {
+    processFields(applicationData.additionalInfo.fields)
+  }
 
   console.log("[ApplicationForm] Schema build complete")
   return z.object(schema)
@@ -91,24 +116,42 @@ interface ApplicationFormProps {
 const getDefaultValues = () => {
   console.log("[ApplicationForm] Initializing default form values")
   let defaults: Record<string, any> = {}
-  Object.values(applicationData.formSchema).forEach((section) => {
-    Object.entries(section.fields).forEach(([fieldName, fieldConfig]) => {
+  
+  // Helper function to process fields for defaults
+  const processFields = (fields: Record<string, any>) => {
+    Object.entries(fields).forEach(([fieldName, fieldConfig]) => {
+      const dbFieldName = toDbColumn(fieldName);
+      
       switch (fieldConfig.type) {
         case "text":
         case "email":
         case "textarea":
         case "select":
         case "radio":
-          defaults[fieldName] = ""
+          defaults[dbFieldName] = ""
           break
         case "checkbox":
-          defaults[fieldName] = false
+          defaults[dbFieldName] = false
           break
         default:
-          defaults[fieldName] = "" // Default empty string for others
+          defaults[dbFieldName] = "" // Default empty string for others
       }
     })
-  })
+  }
+  
+  // Process all sections
+  if (applicationData.personalInfo?.fields) {
+    processFields(applicationData.personalInfo.fields)
+  }
+  
+  if (applicationData.aboutYou?.fields) {
+    processFields(applicationData.aboutYou.fields)
+  }
+  
+  if (applicationData.additionalInfo?.fields) {
+    processFields(applicationData.additionalInfo.fields)
+  }
+  
   console.log("[ApplicationForm] Default values created")
   return defaults
 }
@@ -150,13 +193,31 @@ export default function ApplicationForm({
     color: colors.theme.buttonText,
   };
   
-
-
-
-
   const { toast } = useToast()
   const [savingFields, setSavingFields] = useState<Record<string, boolean>>({})
   const [savedFields, setSavedFields] = useState<Record<string, boolean>>({})
+
+  const renderSavingIndicator = (fieldName: string) => {
+    if (isSubmitted) return null
+    console.log("[ApplicationForm] renderSavingIndicator", fieldName, savingFields[fieldName], savedFields[fieldName])
+
+    // if (savingFields[fieldName]) {
+    //   return (
+    //     <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
+    //       <div
+    //         className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
+    //         style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
+    //       ></div>
+    //     </div>
+    //   )
+    // }
+
+    // if (savedFields[fieldName]) {
+    //   return <Check className="h-4 w-4 ml-2" style={{ color: colors.theme.success }} />
+    // }
+
+    return null
+  }
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -181,11 +242,11 @@ export default function ApplicationForm({
     setSavingFields((prev) => ({ ...prev, [field]: false }))
     setSavedFields((prev) => ({ ...prev, [field]: true }))
 
-    // Reset saved indicator after 2 seconds
+    // Reset saved indicator after 15 seconds
     setTimeout(() => {
       setSavedFields((prev) => ({ ...prev, [field]: false }))
-    }, 2000)
-  }, 1000)
+    }, 15000)
+  }, 15000)
 
   // Watch for form changes and save in real-time
   useEffect(() => {
@@ -210,33 +271,9 @@ export default function ApplicationForm({
     onSubmit()
   }
 
-//   const renderSavingIndicator = (fieldName: string) => {
-//     if (isSubmitted) return null
-
-//     if (savingFields[fieldName]) {
-//       return (
-//         <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
-          
-//      <div
-//   className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
-//   style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
-// ></div>
-
-//         </div>
-//       )
-//     }
-
-//     if (savedFields[fieldName]) {
-//       return <Check className="h-4 w-4 ml-2" style={{ color: colors.theme.success }} />
-//     }
-
-//     return null
-//   }
-
- 
-  const personalInfo = applicationData.formSchema.personalInfo
-  const aboutYou = applicationData.formSchema.aboutYou
-  const additionalInfoSection = applicationData.formSchema.additionalInfo
+  const personalInfo = applicationData.personalInfo
+  const aboutYou = applicationData.aboutYou
+  const additionalInfoSection = applicationData.additionalInfo
 
   return (
     <Form {...form}>
@@ -249,24 +286,28 @@ export default function ApplicationForm({
           <p className="text-sm" style={sectionDescriptionStyles}>
             {personalInfo.description}
           </p>
+          <p className="text-sm" style={{ color: colors.theme.danger }}>
+            {/* Fields marked with <span className="text-red-500">*</span> are required. */}
+          </p>
         </div>
 
         <FormField
           control={form.control}
-          name="legalName"
+          name="full_name"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{personalInfo.fields.legalName.label}</FormLabel>
-                {/* {renderSavingIndicator("legalName")} */}
+                <FormLabel style={labelStyles}>{personalInfo.fields.fullName.label} {personalInfo.fields.fullName.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                {renderSavingIndicator("full_name")}
               </div>
               <FormControl>
                 <Input
-                  placeholder={personalInfo.fields.legalName.placeholder}
+                  placeholder={personalInfo.fields.fullName.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
                   className="placeholder:text-opacity-50"
+                  required
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -276,16 +317,16 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="email"
+          name="discord"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{personalInfo.fields.email.label}</FormLabel>
-                {/* {renderSavingIndicator("email")} */}
+                <FormLabel style={labelStyles}>{personalInfo.fields.discord.label} {personalInfo.fields.discord.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                {renderSavingIndicator("discord")}
               </div>
               <FormControl>
                 <Input
-                  placeholder={personalInfo.fields.email.placeholder}
+                  placeholder={personalInfo.fields.discord.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
@@ -300,20 +341,21 @@ export default function ApplicationForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="university"
+            name="cwid"
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.university.label}</FormLabel>
-                  {/* {renderSavingIndicator("university")} */}
+                  <FormLabel style={labelStyles}>{personalInfo.fields.cwid.label} {personalInfo.fields.cwid.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                  {renderSavingIndicator("cwid")}
                 </div>
                 <FormControl>
                   <Input
-                    placeholder={personalInfo.fields.university.placeholder}
+                    placeholder={personalInfo.fields.cwid.placeholder}
                     {...field}
                     disabled={isSubmitted}
                     style={inputStyles}
                     className="placeholder:text-opacity-50"
+                    required
                   />
                 </FormControl>
                 <FormMessage style={errorMessageStyles} />
@@ -323,69 +365,79 @@ export default function ApplicationForm({
 
           <FormField
             control={form.control}
-            name="major"
+            name="skill_level"
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.major.label}</FormLabel>
-                  {/* {renderSavingIndicator("major")} */}
-                </div>
-                <FormControl>
-                  <Input
-                    placeholder={personalInfo.fields.major.placeholder}
-                    {...field}
-                    disabled={isSubmitted}
-                    style={inputStyles}
-                    className="placeholder:text-opacity-50"
-                  />
-                </FormControl>
-                <FormMessage style={errorMessageStyles} />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="graduationYear"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.graduationYear.label}</FormLabel>
-                  {/* {renderSavingIndicator("graduationYear")} */}
-                </div>
-                <FormControl>
-                  <Input
-                    placeholder={personalInfo.fields.graduationYear.placeholder}
-                    {...field}
-                    disabled={isSubmitted}
-                    style={inputStyles}
-                    className="placeholder:text-opacity-50"
-                  />
-                </FormControl>
-                <FormMessage style={errorMessageStyles} />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="experience"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.experience.label}</FormLabel>
-                  {/* {renderSavingIndicator("experience")} */}
+                  <FormLabel style={labelStyles}>{personalInfo.fields.skillLevel.label} {personalInfo.fields.skillLevel.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                  {renderSavingIndicator("skill_level")}
                 </div>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
                   <FormControl>
                     <SelectTrigger style={inputStyles}>
-                      <SelectValue placeholder={personalInfo.fields.experience.placeholder} />
+                      <SelectValue placeholder={personalInfo.fields.skillLevel.placeholder} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {personalInfo.fields.experience.options.map((option) => (
+                    {personalInfo.fields.skillLevel.options.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage style={errorMessageStyles} />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="hear_about_us"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center">
+                  <FormLabel style={labelStyles}>{personalInfo.fields.hearAboutUs.label} {personalInfo.fields.hearAboutUs.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                  {renderSavingIndicator("hear_about_us")}
+                </div>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
+                  <FormControl>
+                    <SelectTrigger style={inputStyles}>
+                      <SelectValue placeholder={personalInfo.fields.hearAboutUs.placeholder} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {personalInfo.fields.hearAboutUs.options.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage style={errorMessageStyles} />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="hackathon_experience"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center">
+                  <FormLabel style={labelStyles}>{personalInfo.fields.hackathonExperience.label} {personalInfo.fields.hackathonExperience.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                  {renderSavingIndicator("hackathon_experience")}
+                </div>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
+                  <FormControl>
+                    <SelectTrigger style={inputStyles}>
+                      <SelectValue placeholder={personalInfo.fields.hackathonExperience.placeholder} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {personalInfo.fields.hackathonExperience.options.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
@@ -410,12 +462,12 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="whyAttend"
+          name="why_attend"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.whyAttend.label}</FormLabel>
-                {/* {renderSavingIndicator("whyAttend")} */}
+                <FormLabel style={labelStyles}>{aboutYou.fields.whyAttend.label} {aboutYou.fields.whyAttend.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                {renderSavingIndicator("why_attend")}
               </div>
               <FormControl>
                 <Textarea
@@ -433,12 +485,12 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="projectExperience"
+          name="project_experience"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.projectExperience.label}</FormLabel>
-                {/* {renderSavingIndicator("projectExperience")} */}
+                <FormLabel style={labelStyles}>{aboutYou.fields.projectExperience.label} {aboutYou.fields.projectExperience.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                {renderSavingIndicator("project_experience")}
               </div>
               <FormControl>
                 <Textarea
@@ -456,12 +508,12 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="futurePlans"
+          name="future_plans"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.futurePlans.label}</FormLabel>
-                {/* {renderSavingIndicator("futurePlans")} */}
+                <FormLabel style={labelStyles}>{aboutYou.fields.futurePlans.label} {aboutYou.fields.futurePlans.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                {renderSavingIndicator("future_plans")}
               </div>
               <FormControl>
                 <Textarea
@@ -479,12 +531,12 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="funFact"
+          name="fun_fact"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.funFact.label}</FormLabel>
-                {/* {renderSavingIndicator("funFact")} */}
+                <FormLabel style={labelStyles}>{aboutYou.fields.funFact.label} {aboutYou.fields.funFact.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                {renderSavingIndicator("fun_fact")}
               </div>
               <FormControl>
                 <Textarea
@@ -502,12 +554,12 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="selfDescription"
+          name="self_description"
           render={({ field }) => (
             <FormItem className="space-y-3">
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.selfDescription.label}</FormLabel>
-                {/* {renderSavingIndicator("selfDescription")} */}
+                <FormLabel style={labelStyles}>{aboutYou.fields.selfDescription.label} {aboutYou.fields.selfDescription.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                {renderSavingIndicator("self_description")}
               </div>
               <FormControl>
                 <RadioGroup
@@ -549,8 +601,8 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.links.label}</FormLabel>
-                {/* {renderSavingIndicator("links")} */}
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.links.label} {additionalInfoSection.fields.links.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
+                {renderSavingIndicator("links")}
               </div>
               <FormControl>
                 <Textarea
@@ -572,8 +624,8 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label}</FormLabel>
-                {/* {renderSavingIndicator("teammates")} */}
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label} {additionalInfoSection.fields.teammates.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
+                {renderSavingIndicator("teammates")}
               </div>
               <FormControl>
                 <Textarea
@@ -591,12 +643,12 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="referralEmail"
+          name="referral_email"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label}</FormLabel>
-                {/* {renderSavingIndicator("referralEmail")} */}
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label} {additionalInfoSection.fields.referralEmail.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
+                {renderSavingIndicator("referral_email")}
               </div>
               <FormControl>
                 <Input
@@ -614,16 +666,16 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="dietaryRestrictions"
+          name="dietary_restrictions_extra"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictions.label}</FormLabel>
-                {/* {renderSavingIndicator("dietaryRestrictions")} */}
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictionsExtra.label} {additionalInfoSection.fields.dietaryRestrictionsExtra.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
+                {renderSavingIndicator("dietary_restrictions_extra")}
               </div>
               <FormControl>
                 <Textarea
-                  placeholder={additionalInfoSection.fields.dietaryRestrictions.placeholder}
+                  placeholder={additionalInfoSection.fields.dietaryRestrictionsExtra.placeholder}
                   {...field}
                   disabled={isSubmitted}
                   style={inputStyles}
@@ -637,7 +689,7 @@ export default function ApplicationForm({
 
         <FormField
           control={form.control}
-          name="agreeToTerms"
+          name="agree_to_terms"
           render={({ field }) => (
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow"
               style={{ borderColor: isSubmitted ? colors.theme.success : colors.theme.inputBorder }}
@@ -650,7 +702,7 @@ export default function ApplicationForm({
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label}</FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label} {additionalInfoSection.fields.agreeToTerms.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 <FormMessage style={errorMessageStyles} />
               </div>
             </FormItem>
