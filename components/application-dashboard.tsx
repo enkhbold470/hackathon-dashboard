@@ -342,8 +342,7 @@ export default function ApplicationDashboard() {
                   DAHacks 3.5
                 </CardTitle>
                 <CardDescription style={{ color: colors.palette.love }}>
-                  Apply for our upcoming hackathon and track your application
-                  status
+                  Apply & track your application status
                 </CardDescription>
               </div>
             </div>

@@ -317,6 +317,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
           borderColor: colors.theme.cardBorder,
         }}
       >
+        {/* //Info about the hackathon */}
         <div className="relative z-10">
           <h4 
             className="font-medium mb-4 text-lg" 
@@ -349,13 +350,13 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                     <>
                       {section.content.split(":")[0]}:{" "}
                       <a
-                        href="mailto:dahacks@enk.icu"
+                        href="mailto:inky@deanzahacks.com"
                         style={{
                           color: colors.theme.linkText,
                           textDecoration: "underline",
                         }}
                       >
-                        dahacks@enk.icu
+                        inky@deanzahacks.com
                       </a>
                     </>
                   ) : (

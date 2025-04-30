@@ -687,6 +687,32 @@ export default function ApplicationForm({
           )}
         />
 
+        {/* * type your name to sign the code of conduct and media waivers
+        <div className="space-y-2">
+          <FormLabel style={labelStyles}>
+            {additionalInfoSection.fields.name.label}
+            {additionalInfoSection.fields.name.validationRules.required && (
+              <span className="text-red-500">*</span>
+            )}
+          </FormLabel>
+          <Input
+            placeholder={additionalInfoSection.fields.name.placeholder}
+            disabled={isSubmitted}
+            style={{
+              ...inputStyles,
+              fontFamily: 'cursive',
+              fontStyle: 'italic',
+              fontSize: '1.4rem',
+            }}
+            className="placeholder:text-opacity-50"
+            onChange={(e) => {
+              // Just update the local state without form control
+              const value = e.target.value.toUpperCase();
+              // You can store this in a local state if needed
+              // setLocalSignature(value);
+            }}
+          />
+        </div> */}
         <FormField
           control={form.control}
           name="agree_to_terms"
@@ -702,12 +728,18 @@ export default function ApplicationForm({
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label} {additionalInfoSection.fields.agreeToTerms.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label} {" "}
+                <a href="https://github.com/da-hacks/legal/blob/4eb1f4413cdfa7fce2f5914db4786d89b2113176/code_of_conduct.md" target="_blank" style={{ color: colors.theme.linkText }}>Code of Conduct</a> and
+                <a href="https://github.com/da-hacks/legal/blob/4eb1f4413cdfa7fce2f5914db4786d89b2113176/media-waiver.md" target="_blank" style={{ color: colors.theme.linkText }}>{" "}Media Waivers</a>
+                {additionalInfoSection.fields.agreeToTerms.validationRules.required ? <span className="text-red-500">*</span> : null} 
+                </FormLabel>
                 <FormMessage style={errorMessageStyles} />
               </div>
             </FormItem>
           )}
         />
+        
+        
 
         {!isSubmitted && (
           <div className="flex justify-end pt-4">
