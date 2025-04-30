@@ -29,3 +29,11 @@ next-env.d.ts
 /.clerk/
 
 TODO.md
+
+lib/generated/prisma/
+
+orm/**/migrations/
+misc/**/migrations/
+databases/**/migrations/
+experimental/**/*.db
+dev.db

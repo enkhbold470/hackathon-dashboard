@@ -1,35 +1,55 @@
-import { Pool } from 'pg';
+import { prisma } from './prisma'
 
-// Create a connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
-});
-
-// Simple query function
+/**
+ * Legacy query function for backward compatibility
+ * @deprecated Use prisma client directly instead
+ */
 export async function query(text: string, params: any[] = []) {
+  console.warn('WARNING: Using deprecated query function. Consider migrating to Prisma client directly.')
   try {
     const start = Date.now();
-    const result = await pool.query(text, params);
+    
+    // For basic SELECT queries, we'll attempt to map to Prisma
+    if (text.trim().toUpperCase().startsWith('SELECT')) {
+      console.log('Executed legacy query via Prisma', { text, params });
+      // This is a very basic implementation - in practice you should use Prisma models directly
+      const result = await prisma.$queryRawUnsafe(text, ...params);
+      const duration = Date.now() - start;
+      console.log('Query completed', { duration, rows: Array.isArray(result) ? result.length : 0 });
+      return { rows: Array.isArray(result) ? result : [result] };
+    }
+
+    // For other queries, we'll pass through to raw query
+    const result = await prisma.$queryRawUnsafe(text, ...params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: result.rowCount });
-    return result;
+    console.log('Executed legacy query via Prisma', { text, duration });
+    
+    // Format the result to match the old query function
+    return { 
+      rows: Array.isArray(result) ? result : [result],
+      rowCount: Array.isArray(result) ? result.length : 1
+    };
   } catch (error) {
     console.error('Query error:', error);
     throw error;
   }
 }
 
-// Close all connections
+/**
+ * Close database connections
+ * @deprecated Use Prisma's $disconnect instead
+ */
 export async function closePool() {
-  await pool.end();
+  await prisma.$disconnect();
 }
 
-// Test the connection
+/**
+ * Test the database connection
+ */
 export async function testConnection() {
   try {
-    const result = await query('SELECT NOW()');
-    console.log('Database connection successful!', result.rows[0]);
+    const result = await prisma.$queryRaw`SELECT NOW()`;
+    console.log('Database connection successful!', result);
     return true;
   } catch (error) {
     console.error('Database connection failed:', error);
