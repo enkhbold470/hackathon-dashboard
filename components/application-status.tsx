@@ -1,3 +1,4 @@
+// components/application-status.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -6,8 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle, Clock, XCircle, AlertCircle, PartyPopper, Terminal, Code } from "lucide-react"
 import { motion } from "framer-motion"
 import colors from "@/lib/colors"
-import applicationData from "@/lib/applicationData.json"
-
+import { applicationStatus } from "@/lib/applicationData"
 type ApplicationStatus = "not_started" | "in_progress" | "submitted" | "accepted" | "rejected" | "confirmed"
 
 interface ApplicationStatusProps {
@@ -36,14 +36,14 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
   // Animation effect when status changes
   useEffect(() => {
     setAnimate(true)
-    const timer = setTimeout(() => setAnimate(false), 1000)
+    const timer = setTimeout(() => setAnimate(false), 500)
     return () => clearTimeout(timer)
   }, [status])
 
   // Typing effect for accepted status
   useEffect(() => {
     if (status === "accepted") {
-      const text = applicationData.applicationStatus.statusDetails.accepted.successMessage
+      const text = applicationStatus.statusDetails.accepted.successMessage
       setIsTyping(true)
       
       let i = 0
@@ -62,8 +62,8 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
   }, [status])
 
   const getStatusDetails = () => {
-    const statusDetail = applicationData.applicationStatus.statusDetails[status] || 
-                        applicationData.applicationStatus.statusDetails.not_started
+    const statusDetail = applicationStatus.statusDetails[status] || 
+                        applicationStatus.statusDetails.not_started
     
     // Get the icon component based on the icon name in the JSON
     const IconComponent = IconMap[statusDetail.icon as keyof typeof IconMap]
@@ -292,7 +292,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
               className="list-decimal list-inside space-y-4 text-base leading-relaxed" 
               style={{ color: colors.theme.foreground }}
             >
-              {applicationData.applicationStatus.hackathonInfo.nextSteps.map((step, index) => (
+              {applicationStatus.hackathonInfo.nextSteps.map((step: string, index: number) => (
                 <motion.li
                   key={index}
                   initial={{ x: -20, opacity: 0 }}
@@ -326,7 +326,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
           </h4>
           
           <div className="space-y-6 text-base">
-            {applicationData.applicationStatus.hackathonInfo.sections.map((section, index) => (
+            {applicationStatus.hackathonInfo.sections.map((section: any, index: number) => (
               <motion.div 
                 key={index}
                 initial={{ opacity: 0 }} 
