@@ -86,10 +86,14 @@ const [lastSaved, setLastSaved] = useState<Date | null>(null)
   
     try {
       console.log("[ApplicationDashboard] Saving application draft to database")
+      // Fields should already be using DB column naming conventions from the form
       const response = await fetch('/api/db/save-application', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedFormData),
+        body: JSON.stringify({
+          ...updatedFormData,
+          status: applicationStatus
+        }),
       })
   
       if (!response.ok) {
@@ -118,7 +122,13 @@ const [lastSaved, setLastSaved] = useState<Date | null>(null)
     console.log("[ApplicationDashboard] Starting application submission process")
     setIsSubmitting(true);
     
-    const submissionData = { ...formData, agreeToTerms: formData.agreeToTerms ?? false };
+    // Prepare submission data using snake_case field names for DB
+    const submissionData = { 
+      ...formData, 
+      agree_to_terms: formData.agree_to_terms ?? false,
+      status: "submitted" 
+    };
+    
     console.log("[ApplicationDashboard] Preparing submission data:", JSON.stringify(submissionData))
 
     try {
