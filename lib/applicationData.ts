@@ -1,12 +1,12 @@
 export const applicationData = {
   personalInfo: {
-    title: "Personal Information",
+    title: "👤 Personal Information",
     description: "Tell us about yourself",
     fields: {
       cwid: {
-        label: "Campus Wide ID (CWID)",
+        label: "🆔 Campus Wide ID (CWID)",
         type: "text",
-        placeholder: "Enter your CWID",
+        placeholder: "Enter your 8 digit CWID",
         validationRules: {
           required: true,
           minLength: 5,
@@ -14,9 +14,9 @@ export const applicationData = {
         }
       },
       fullName: {
-        label: "Full Name / Preferred Name",
+        label: "📛 Full Name (First and Last)",
         type: "text",
-        placeholder: "Enter your full or preferred name",
+        placeholder: "It should match with your Student ID Card",
         validationRules: {
           required: true,
           minLength: 2,
@@ -24,9 +24,9 @@ export const applicationData = {
         }
       },
       discord: {
-        label: "Discord Username",
+        label: "💬 Discord Username",
         type: "text",
-        placeholder: "yourdiscord#1234",
+        placeholder: "inky3457",
         validationRules: {
           required: true,
           minLength: 3,
@@ -34,13 +34,13 @@ export const applicationData = {
         }
       },
       skillLevel: {
-        label: "Skill Level",
+        label: "📈 Skill Level",
         type: "select",
         options: [
-          { value: "beginner", label: "Beginner" },
-          { value: "intermediate", label: "Intermediate" },
-          { value: "advanced", label: "Advanced" },
-          { value: "expert", label: "Expert" }
+          { value: "beginner", label: "🟢 Beginner" },
+          { value: "intermediate", label: "🟡 Intermediate" },
+          { value: "advanced", label: "🟠 Advanced" },
+          { value: "expert", label: "🔴 Expert" }
         ],
         placeholder: "Select your skill level",
         validationRules: {
@@ -49,13 +49,13 @@ export const applicationData = {
         }
       },
       hackathonExperience: {
-        label: "How many hackathons have you attended?",
+        label: "🎉 How many hackathons have you attended?",
         type: "select",
         options: [
-          { value: "0", label: "None (First time!)" },
-          { value: "1-2", label: "1-2" },
-          { value: "3-5", label: "3-5" },
-          { value: "5+", label: "5+" }
+          { value: "0", label: "None (🎈 First time!)" },
+          { value: "2-5", label: "2-5" },
+          { value: "5-10", label: "5-10" },
+          { value: "10+", label: "10+" }
         ],
         placeholder: "Select number of hackathons attended",
         validationRules: {
@@ -63,24 +63,16 @@ export const applicationData = {
           message: "Please select your hackathon experience."
         }
       },
-      dietaryRestrictions: {
-        label: "Dietary Restrictions",
-        type: "textarea",
-        placeholder: "Let us know about any dietary needs...",
-        validationRules: {
-          required: false
-        }
-      },
       hearAboutUs: {
-        label: "How did you hear about us?",
+        label: "📣 How did you hear about us?",
         type: "select",
         options: [
-          { value: "friend", label: "Friend" },
-          { value: "discord", label: "Discord" },
-          { value: "instagram", label: "Instagram" },
-          { value: "flyer", label: "Flyer on Campus" },
-          { value: "professor", label: "Professor/Class" },
-          { value: "other", label: "Other" }
+          { value: "friend", label: "👯 Friend" },
+          { value: "discord", label: "💬 Discord" },
+          { value: "instagram", label: "📸 Instagram" },
+          { value: "flyer", label: "📄 Flyer on Campus" },
+          { value: "professor", label: "🎓 Professor/Class" },
+          { value: "other", label: "❓ Other" }
         ],
         placeholder: "Select one",
         validationRules: {
@@ -91,11 +83,11 @@ export const applicationData = {
     }
   },
   aboutYou: {
-    title: "About You",
+    title: "🧠 About You",
     description: "Help us get to know you better",
     fields: {
       whyAttend: {
-        label: "Why do you want to come to DA Hacks 3.5?",
+        label: "🤔 Why do you want to come to DA Hacks 3.5?",
         type: "textarea",
         placeholder: "Tell us why you're interested in attending our hackathon...",
         validationRules: {
@@ -105,7 +97,7 @@ export const applicationData = {
         }
       },
       projectExperience: {
-        label: "Tell us about a project you've enjoyed working on, technical or non-technical.",
+        label: "📚 Tell us about a project you've enjoyed working on",
         type: "textarea",
         placeholder: "Share your experience with a project you've worked on...",
         validationRules: {
@@ -115,7 +107,7 @@ export const applicationData = {
         }
       },
       futurePlans: {
-        label: "What are your future plans in next 10 years in tech or other fields? Dream big :)",
+        label: "🚀 What are your future plans for the next 10 years?",
         type: "textarea",
         placeholder: "Tell us about your aspirations and goals...",
         validationRules: {
@@ -125,7 +117,7 @@ export const applicationData = {
         }
       },
       funFact: {
-        label: "Share a fun fact about yourself :)",
+        label: "🎈 Share a fun fact about yourself",
         type: "textarea",
         placeholder: "Something interesting about you...",
         validationRules: {
@@ -135,13 +127,13 @@ export const applicationData = {
         }
       },
       selfDescription: {
-        label: "How would you describe yourself?",
+        label: "💡 How would you describe yourself?",
         type: "radio",
         options: [
-          { value: "creative", label: "Creative problem solver" },
-          { value: "technical", label: "Technical specialist" },
-          { value: "leader", label: "Team leader" },
-          { value: "balanced", label: "Jack of all trades" }
+          { value: "creative", label: "🎨 Creative problem solver" },
+          { value: "technical", label: "🧠 Technical specialist" },
+          { value: "leader", label: "🧑‍💼 Team leader" },
+          { value: "balanced", label: "⚖️ Jack of all trades" }
         ],
         validationRules: {
           required: true,
@@ -151,11 +143,11 @@ export const applicationData = {
     }
   },
   additionalInfo: {
-    title: "Additional Information",
-    description: "Optional details that help us better accommodate you",
+    title: "🧾 Additional Information",
+    description: "📌 Optional details that help us better accommodate you",
     fields: {
       links: {
-        label: "Portfolio/GitHub/LinkedIn Links",
+        label: "🔗 Portfolio/GitHub/LinkedIn Links",
         type: "textarea",
         placeholder: "Share your relevant links...",
         validationRules: {
@@ -163,7 +155,7 @@ export const applicationData = {
         }
       },
       teammates: {
-        label: "Do you already have teammates? List their emails (optional)",
+        label: "👥 Do you already have teammates? List their emails (optional)",
         type: "textarea",
         placeholder: "List email addresses of potential teammates...",
         validationRules: {
@@ -171,7 +163,7 @@ export const applicationData = {
         }
       },
       referralEmail: {
-        label: "If someone referred you, what's their email? (optional)",
+        label: "📧 If someone referred you, what's their email? (optional)",
         type: "text",
         placeholder: "Email of person who referred you",
         validationRules: {
@@ -179,22 +171,22 @@ export const applicationData = {
         }
       },
       dietaryRestrictionsExtra: {
-        label: "Any additional dietary restrictions? (optional)",
+        label: "📝 Any additional dietary restrictions? If none, leave N/A",
         type: "textarea",
         placeholder: "Let us know about any dietary needs...",
         validationRules: {
-          required: false
+          required: true
         }
       },
       agreeToTerms: {
-        label: "I agree to the Code of Conduct and Event Terms",
+        label: "I agree to the ",
         type: "checkbox",
         validationRules: {
           required: true,
           value: true,
           message: "You must agree to the terms and conditions."
         }
-      }
+      },
     }
   }
 };
@@ -266,11 +258,11 @@ export const applicationStatus = {
       successMessage: "ACCESS GRANTED: Welcome to DAHacks 3.5! Your application has been approved."
     },
     rejected: {
-      title: "Not Accepted",
-      description: "We regret to inform you that your application was not accepted.",
+      title: "Waitlisted",
+      description: "We were thrilled by your application, but unfortunately due to limit of capacity, you were waitlisted.",
       icon: "XCircle",
       color: "danger",
-      message: "Thank you for your interest. We encourage you to apply for our future events."
+      message: "Thank you for your interest. We'll notify you if a spot opens up."
     },
     confirmed: {
       title: "Confirmed",
@@ -283,23 +275,25 @@ export const applicationStatus = {
   hackathonInfo: {
     sections: [
       {
-        title: "What is a hackathon?",
-        content: "A hackathon is like a creative marathon for tech enthusiasts! DAHacks is great for first timers or returners looking to experience inspiring guest speakers, helpful workshops, tons of skilled mentors, and, of course, fun games and cool swag."
+        title: "What is a hackathon? 💡👨‍💻🎨",
+        content: "A hackathon is like a creative marathon for tech enthusiasts! 🧠⚡ DAHacks is great for first timers 👶 or returners 🔁 looking to experience inspiring guest speakers 🎤, helpful workshops 🛠️, tons of skilled mentors 🧑‍🏫, and, of course, fun games 🎲 and cool swag 🎁."
       },
       {
-        title: "When and where is DAHacks?",
-        content: "DAHacks is from Friday, May 31st from 10:30 AM - 9 PM to Saturday, June 1st from 9 AM - 6 PM at De Anza College in the Science Center Building SC1102. This is not an overnight event."
+        title: "When and where is DAHacks? 📅📍",
+        content: "DAHacks is from **Friday, May 30th (10:30 AM - 10 PM)** to **Saturday, May 31st (8 AM - 6 PM)** at De Anza College 🏫 in the **Science Center Building SC1102** 🧪 and Campus Center, Conference A & B 📚. This is not an overnight event 🌙🚫."
       },
       {
-        title: "Questions?",
-        content: "Email us at: dahacks@enk.icu"
+        title: "Questions? ❓",
+        content: "Email us at: **inky@deanzahacks.com** ✉️"
       }
+    
     ],
     nextSteps: [
-      "Our team will review your application",
-      "You'll receive an email with our decision",
-      "If accepted, you'll need to confirm your attendance",
-      "After confirmation, you'll receive a QR code for check-in"
+      "🧐 Our team will review your application",
+      "📬 You'll receive an email with our decision",
+      "✅ If accepted, you'll need to confirm your attendance",
+      "📲 After confirmation, you'll receive a QR code for check-in"
     ]
+    
   }
 }
