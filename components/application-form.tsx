@@ -199,21 +199,22 @@ export default function ApplicationForm({
 
   const renderSavingIndicator = (fieldName: string) => {
     if (isSubmitted) return null
+    console.log("[ApplicationForm] renderSavingIndicator", fieldName, savingFields[fieldName], savedFields[fieldName])
 
-    if (savingFields[fieldName]) {
-      return (
-        <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
-          <div
-            className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
-          ></div>
-        </div>
-      )
-    }
+    // if (savingFields[fieldName]) {
+    //   return (
+    //     <div className="ml-2 inline-flex items-center justify-center w-4 h-4 relative" title="Saving...">
+    //       <div
+    //         className="absolute w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
+    //         style={{ borderColor: `${colors.theme.primary} transparent transparent transparent` }}
+    //       ></div>
+    //     </div>
+    //   )
+    // }
 
-    if (savedFields[fieldName]) {
-      return <Check className="h-4 w-4 ml-2" style={{ color: colors.theme.success }} />
-    }
+    // if (savedFields[fieldName]) {
+    //   return <Check className="h-4 w-4 ml-2" style={{ color: colors.theme.success }} />
+    // }
 
     return null
   }
@@ -623,7 +624,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label} ?{additionalInfoSection.fields.teammates.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label} {additionalInfoSection.fields.teammates.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
                 {renderSavingIndicator("teammates")}
               </div>
               <FormControl>
@@ -646,7 +647,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label} ?{additionalInfoSection.fields.referralEmail.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label} {additionalInfoSection.fields.referralEmail.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
                 {renderSavingIndicator("referral_email")}
               </div>
               <FormControl>
@@ -669,7 +670,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictionsExtra.label} ?{additionalInfoSection.fields.dietaryRestrictionsExtra.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictionsExtra.label} {additionalInfoSection.fields.dietaryRestrictionsExtra.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
                 {renderSavingIndicator("dietary_restrictions_extra")}
               </div>
               <FormControl>
@@ -701,7 +702,7 @@ export default function ApplicationForm({
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label} ?{additionalInfoSection.fields.agreeToTerms.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label} {additionalInfoSection.fields.agreeToTerms.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 <FormMessage style={errorMessageStyles} />
               </div>
             </FormItem>
