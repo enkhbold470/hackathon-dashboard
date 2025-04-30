@@ -277,7 +277,7 @@ export default function ApplicationForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2">
         {/* Personal Information Section */}
         <div className="space-y-2">
           <h2 className="text-xl font-semibold" style={sectionTitleStyles}>
