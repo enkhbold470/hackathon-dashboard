@@ -285,6 +285,9 @@ export default function ApplicationForm({
           <p className="text-sm" style={sectionDescriptionStyles}>
             {personalInfo.description}
           </p>
+          <p className="text-sm" style={{ color: colors.theme.danger }}>
+            {/* Fields marked with <span className="text-red-500">*</span> are required. */}
+          </p>
         </div>
 
         <FormField
@@ -293,7 +296,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{personalInfo.fields.fullName.label}</FormLabel>
+                <FormLabel style={labelStyles}>{personalInfo.fields.fullName.label} {personalInfo.fields.fullName.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 {renderSavingIndicator("full_name")}
               </div>
               <FormControl>
@@ -303,6 +306,7 @@ export default function ApplicationForm({
                   disabled={isSubmitted}
                   style={inputStyles}
                   className="placeholder:text-opacity-50"
+                  required
                 />
               </FormControl>
               <FormMessage style={errorMessageStyles} />
@@ -316,7 +320,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{personalInfo.fields.discord.label}</FormLabel>
+                <FormLabel style={labelStyles}>{personalInfo.fields.discord.label} {personalInfo.fields.discord.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 {renderSavingIndicator("discord")}
               </div>
               <FormControl>
@@ -340,7 +344,7 @@ export default function ApplicationForm({
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.cwid.label}</FormLabel>
+                  <FormLabel style={labelStyles}>{personalInfo.fields.cwid.label} {personalInfo.fields.cwid.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                   {renderSavingIndicator("cwid")}
                 </div>
                 <FormControl>
@@ -350,6 +354,7 @@ export default function ApplicationForm({
                     disabled={isSubmitted}
                     style={inputStyles}
                     className="placeholder:text-opacity-50"
+                    required
                   />
                 </FormControl>
                 <FormMessage style={errorMessageStyles} />
@@ -363,7 +368,7 @@ export default function ApplicationForm({
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.skillLevel.label}</FormLabel>
+                  <FormLabel style={labelStyles}>{personalInfo.fields.skillLevel.label} {personalInfo.fields.skillLevel.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                   {renderSavingIndicator("skill_level")}
                 </div>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
@@ -393,7 +398,7 @@ export default function ApplicationForm({
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.hearAboutUs.label}</FormLabel>
+                  <FormLabel style={labelStyles}>{personalInfo.fields.hearAboutUs.label} {personalInfo.fields.hearAboutUs.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                   {renderSavingIndicator("hear_about_us")}
                 </div>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
@@ -421,7 +426,7 @@ export default function ApplicationForm({
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center">
-                  <FormLabel style={labelStyles}>{personalInfo.fields.hackathonExperience.label}</FormLabel>
+                  <FormLabel style={labelStyles}>{personalInfo.fields.hackathonExperience.label} {personalInfo.fields.hackathonExperience.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                   {renderSavingIndicator("hackathon_experience")}
                 </div>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitted}>
@@ -460,7 +465,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.whyAttend.label}</FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.whyAttend.label} {aboutYou.fields.whyAttend.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 {renderSavingIndicator("why_attend")}
               </div>
               <FormControl>
@@ -483,7 +488,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.projectExperience.label}</FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.projectExperience.label} {aboutYou.fields.projectExperience.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 {renderSavingIndicator("project_experience")}
               </div>
               <FormControl>
@@ -506,7 +511,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.futurePlans.label}</FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.futurePlans.label} {aboutYou.fields.futurePlans.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 {renderSavingIndicator("future_plans")}
               </div>
               <FormControl>
@@ -529,7 +534,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.funFact.label}</FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.funFact.label} {aboutYou.fields.funFact.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 {renderSavingIndicator("fun_fact")}
               </div>
               <FormControl>
@@ -552,7 +557,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem className="space-y-3">
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{aboutYou.fields.selfDescription.label}</FormLabel>
+                <FormLabel style={labelStyles}>{aboutYou.fields.selfDescription.label} {aboutYou.fields.selfDescription.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 {renderSavingIndicator("self_description")}
               </div>
               <FormControl>
@@ -595,7 +600,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.links.label}</FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.links.label} {additionalInfoSection.fields.links.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
                 {renderSavingIndicator("links")}
               </div>
               <FormControl>
@@ -618,7 +623,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label}</FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.teammates.label} ?{additionalInfoSection.fields.teammates.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
                 {renderSavingIndicator("teammates")}
               </div>
               <FormControl>
@@ -641,7 +646,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label}</FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.referralEmail.label} ?{additionalInfoSection.fields.referralEmail.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
                 {renderSavingIndicator("referral_email")}
               </div>
               <FormControl>
@@ -664,7 +669,7 @@ export default function ApplicationForm({
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictionsExtra.label}</FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.dietaryRestrictionsExtra.label} ?{additionalInfoSection.fields.dietaryRestrictionsExtra.validationRules.required ? <span className="text-red-500">*</span> : null} </FormLabel>
                 {renderSavingIndicator("dietary_restrictions_extra")}
               </div>
               <FormControl>
@@ -696,7 +701,7 @@ export default function ApplicationForm({
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label}</FormLabel>
+                <FormLabel style={labelStyles}>{additionalInfoSection.fields.agreeToTerms.label} ?{additionalInfoSection.fields.agreeToTerms.validationRules.required ? <span className="text-red-500">*</span> : null}</FormLabel>
                 <FormMessage style={errorMessageStyles} />
               </div>
             </FormItem>

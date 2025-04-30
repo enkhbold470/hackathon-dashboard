@@ -9,6 +9,16 @@ import colors from "@/lib/colors"
 import useWindowSize from "@/hooks/useWindowSize"
 import Confetti from 'react-confetti'
 import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 type Status = "not_started" | "in_progress" | "submitted" | "accepted" | "rejected" | "confirmed"
 
@@ -20,10 +30,11 @@ export default function ApplicationDashboard() {
   const { width, height } = useWindowSize()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [submissionData, setSubmissionData] = useState<Record<string, any>>({})
 
   const [isSaving, setIsSaving] = useState(false)
-const [lastSaved, setLastSaved] = useState<Date | null>(null)
-
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
   console.log("[ApplicationDashboard] Component initialized")
 
@@ -113,6 +124,39 @@ const [lastSaved, setLastSaved] = useState<Date | null>(null)
     }
   }
   
+  const prepareSubmission = () => {
+    // Check for required fields before allowing submission
+    const requiredFields = ['cwid', 'full_name'];
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    
+    if (missingFields.length > 0) {
+      const missingFieldLabels = missingFields.map(field => 
+        field === 'cwid' ? 'CWID' : 
+        field === 'full_name' ? 'Full Name' : field
+      );
+      
+      toast.error(`Please fill in all required fields: ${missingFieldLabels.join(', ')}`);
+      return;
+    }
+
+    // Check if user agreed to terms
+    if (!formData.agree_to_terms) {
+      toast.error('You must agree to the terms and conditions to submit your application.');
+      return;
+    }
+    
+    // Prepare submission data using snake_case field names for DB
+    const data = { 
+      ...formData, 
+      agree_to_terms: formData.agree_to_terms ?? false,
+      status: "submitted" 
+    };
+    
+    console.log("[ApplicationDashboard] Preparing submission data:", JSON.stringify(data))
+    setSubmissionData(data);
+    setShowConfirmDialog(true);
+  }
+
   const handleFormSubmit = async () => {
     if (isSubmitting) {
       console.log("[ApplicationDashboard] Submission already in progress, ignoring duplicate submit")
@@ -121,16 +165,8 @@ const [lastSaved, setLastSaved] = useState<Date | null>(null)
     
     console.log("[ApplicationDashboard] Starting application submission process")
     setIsSubmitting(true);
+    setShowConfirmDialog(false);
     
-    // Prepare submission data using snake_case field names for DB
-    const submissionData = { 
-      ...formData, 
-      agree_to_terms: formData.agree_to_terms ?? false,
-      status: "submitted" 
-    };
-    
-    console.log("[ApplicationDashboard] Preparing submission data:", JSON.stringify(submissionData))
-
     try {
       console.log("[ApplicationDashboard] Sending submission to API")
       const response = await fetch('/api/db/submit-application', {
@@ -143,7 +179,13 @@ const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
       if (!response.ok) {
         console.error("[ApplicationDashboard] Submission API error:", result)
-        throw new Error(result.error || 'Failed to submit application');
+        if (result.error && typeof result.error === 'string') {
+          throw new Error(result.error);
+        } else if (result.message && typeof result.message === 'string') {
+          throw new Error(result.message);
+        } else {
+          throw new Error('Failed to submit application. Please check all required fields.');
+        }
       }
 
       console.log("[ApplicationDashboard] Application submitted successfully:", JSON.stringify(result.application));
@@ -155,13 +197,13 @@ const [lastSaved, setLastSaved] = useState<Date | null>(null)
     } catch (error: any) {
       console.error("[ApplicationDashboard] Error submitting application:", error);
       toast.error(`Submission failed: ${error.message}`);
+      // Reset submission state so user can try again
+      setSubmissionData({});
     } finally {
       setIsSubmitting(false);
       console.log("[ApplicationDashboard] Submission process completed")
     }
   }
-
-
 
   return (
     <div className="container max-w-5xl py-10 flex justify-center items-center w-full">
@@ -172,6 +214,30 @@ const [lastSaved, setLastSaved] = useState<Date | null>(null)
             <Confetti width={width} height={height}/>
           </div>
         )}
+
+        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Submit Application</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to submit your application? You won't be able to edit it after submission.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleFormSubmit}
+                disabled={isSubmitting}
+                style={{
+                  backgroundColor: colors.theme.primary,
+                  color: colors.theme.buttonText,
+                }}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <Card
           className="overflow-hidden relative shadow-lg"
@@ -253,7 +319,7 @@ const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
                   <ApplicationForm
                     onChange={handleFormChange}
-                    onSubmit={handleFormSubmit}
+                    onSubmit={prepareSubmission}
                     formData={formData}
                     isSubmitted={applicationStatus !== "not_started" && applicationStatus !== "in_progress"}
                     isLoading={isSubmitting || isLoading}
