@@ -7,14 +7,12 @@ import {
   SignUpButton,
   SignedIn,
   SignedOut,
-  UserButton,
-  useUser
+  UserButton
 } from '@clerk/nextjs'
-import colors from "@/lib/colors"
+
 export const metadata: Metadata = {
   title: "DA Hacks 3.5 Portal",
   description: "Apply as a Hacker here!",
-  generator: "Typescript",
 };
 
 export default function RootLayout({
@@ -22,12 +20,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
-    <ClerkProvider >   
-     <html lang="en">
+    <html lang="en">
       <body>
-      <header className="flex justify-end items-center p-4 gap-4 h-16">
+        <ClerkProvider>
+          <header className="flex justify-end items-center p-4 gap-4 h-16">
             <SignedOut>
               <SignInButton />
               <SignUpButton />
@@ -36,11 +33,10 @@ export default function RootLayout({
               <UserButton />
             </SignedIn>
           </header>
-        <main>{children}</main>
-        <Toaster />
+          <main>{children}</main>
+          <Toaster />
+        </ClerkProvider>
       </body>
     </html>
-    </ClerkProvider>
-
   );
 }
