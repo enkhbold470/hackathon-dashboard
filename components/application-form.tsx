@@ -163,11 +163,19 @@ const FormFieldComponent = memo(({
                         padding: isMobile 
                           ? uiConfig.spacing.mobile.inputPadding 
                           : uiConfig.spacing.inputPadding,
-                        borderRadius: uiConfig.borderRadius.md,
                         fontSize: isMobile 
                           ? uiConfig.typography.fontSize.mobile.answerOption
                           : uiConfig.typography.fontSize.answerOption,
+                        borderWidth: uiConfig.inputStyles.borderWidth,
+                        borderBottomWidth: '1px',
+                        borderBottomColor: colors.theme.inputBorder,
+                        borderBottomStyle: 'solid',
+                        borderRadius: uiConfig.inputStyles.borderRadius,
+                        backgroundColor: uiConfig.inputStyles.backgroundColor,
+                        boxShadow: 'none',
+                        transition: uiConfig.transitions.default
                       }}
+                      className="focus:border-b-2 focus:border-primary hover:border-b-2 hover:border-primary focus:outline-none focus:shadow-none"
                       value={fieldValue || ""}
                       onChange={(e) => {
                         field.onChange(e)
@@ -210,12 +218,20 @@ const FormFieldComponent = memo(({
                         padding: isMobile 
                           ? uiConfig.spacing.mobile.inputPadding 
                           : uiConfig.spacing.inputPadding,
-                        borderRadius: uiConfig.borderRadius.md,
                         fontSize: isMobile 
                           ? uiConfig.typography.fontSize.mobile.answerOption
                           : uiConfig.typography.fontSize.answerOption,
-                        lineHeight: uiConfig.typography.lineHeight.relaxed
+                        lineHeight: uiConfig.typography.lineHeight.relaxed,
+                        borderWidth: uiConfig.inputStyles.borderWidth,
+                        borderBottomWidth: '1px',
+                        borderBottomColor: colors.theme.inputBorder,
+                        borderBottomStyle: 'solid',
+                        borderRadius: uiConfig.inputStyles.borderRadius,
+                        backgroundColor: uiConfig.inputStyles.backgroundColor,
+                        boxShadow: 'none',
+                        transition: uiConfig.transitions.default
                       }}
+                      className="focus:border-b-2 focus:border-primary hover:border-b-2 hover:border-primary focus:outline-none focus:shadow-none"
                       value={fieldValue || ""}
                       onChange={(e) => {
                         field.onChange(e)
@@ -254,19 +270,29 @@ const FormFieldComponent = memo(({
                     disabled={isSubmitted || isSubmitting}
                   >
                     <FormControl>
-                      <SelectTrigger style={{
-                        ...styles.input,
-                        width: isMobile ? '100%' : uiConfig.inputSizes.dropdown.width,
-                        maxWidth: uiConfig.inputSizes.dropdown.maxWidth,
-                        height: uiConfig.inputSizes.dropdown.height,
-                        borderRadius: uiConfig.borderRadius.md,
-                        fontSize: isMobile 
-                          ? uiConfig.typography.fontSize.mobile.answerOption
-                          : uiConfig.typography.fontSize.answerOption,
-                        padding: isMobile 
-                          ? uiConfig.spacing.mobile.inputPadding 
-                          : uiConfig.spacing.inputPadding
-                      }}>
+                      <SelectTrigger 
+                        style={{
+                          ...styles.input,
+                          width: isMobile ? '100%' : uiConfig.inputSizes.dropdown.width,
+                          maxWidth: uiConfig.inputSizes.dropdown.maxWidth,
+                          height: uiConfig.inputSizes.dropdown.height,
+                          padding: isMobile 
+                            ? uiConfig.spacing.mobile.inputPadding 
+                            : uiConfig.spacing.inputPadding,
+                          fontSize: isMobile 
+                            ? uiConfig.typography.fontSize.mobile.answerOption
+                            : uiConfig.typography.fontSize.answerOption,
+                          borderWidth: uiConfig.inputStyles.borderWidth,
+                          borderBottomWidth: '1px',
+                          borderBottomColor: colors.theme.inputBorder,
+                          borderBottomStyle: 'solid',
+                          borderRadius: uiConfig.inputStyles.borderRadius,
+                          backgroundColor: uiConfig.inputStyles.backgroundColor,
+                          boxShadow: 'none',
+                          transition: uiConfig.transitions.default
+                        }}
+                        className="focus:border-b-2 focus:border-primary hover:border-b-2 hover:border-primary focus:outline-none focus:shadow-none"
+                      >
                         <SelectValue placeholder={fieldConfig.placeholder} />
                       </SelectTrigger>
                     </FormControl>

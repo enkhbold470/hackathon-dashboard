@@ -264,230 +264,241 @@ export default function ApplicationDashboard() {
 
   return (
     <div 
-      className="w-full max-w-5xl py-8 px-4"
+      className="flex justify-center items-start w-full py-8"
       style={{
         fontFamily: uiConfig.typography.fontFamily.base,
         padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
       }}
     >
-      {isExploding && (
-        <Confetti
-          width={width || 300}
-          height={height || 300}
-          recycle={false}
-          numberOfPieces={500}
-          onConfettiComplete={() => setIsExploding(false)}
-        />
-      )}
-
-      <h1 
-        className="text-4xl font-bold mb-6 text-center"
+      <div
         style={{
-          fontSize: isMobile ? uiConfig.typography.fontSize.mobile.formTitle : uiConfig.typography.fontSize.formTitle,
-          fontWeight: uiConfig.typography.fontWeight.bold,
-          marginBottom: isMobile ? '1.5rem' : '2rem',
-          color: colors.theme.primary
+          width: '100%',
+          maxWidth: uiConfig.layout.maxWidth,
+          margin: uiConfig.layout.contentMargin,
+          padding: isMobile ? uiConfig.layout.mobilePadding : uiConfig.layout.contentPadding
         }}
       >
-        Hackathon Application
-      </h1>
+        {isExploding && (
+          <Confetti
+            width={width || 300}
+            height={height || 300}
+            recycle={false}
+            numberOfPieces={500}
+            onConfettiComplete={() => setIsExploding(false)}
+          />
+        )}
 
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent style={{
-          borderRadius: uiConfig.borderRadius.md,
-          backgroundColor: colors.theme.background,
-          border: `1px solid ${colors.theme.inputBorder}`,
-          padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-        }}>
-          <AlertDialogHeader>
-            <AlertDialogTitle style={{
-              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-              fontWeight: uiConfig.typography.fontWeight.bold,
-              color: colors.theme.primary
-            }}>
-              Submit Application?
-            </AlertDialogTitle>
-            <AlertDialogDescription style={{
-              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
-              color: colors.theme.secondary
-            }}>
-              Are you sure you want to submit your application? You won't be
-              able to make changes after submission.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className={isMobile ? 'flex-col space-y-2' : ''}>
-            <AlertDialogCancel 
-              style={{
-                fontSize: uiConfig.typography.fontSize.buttonText,
-                borderRadius: uiConfig.borderRadius.md
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => handleFormSubmit(submissionData)}
-              className="bg-theme-primary text-white hover:bg-theme-primary/90"
-              style={{
-                backgroundColor: colors.theme.primary,
-                color: colors.theme.buttonText,
-                fontSize: uiConfig.typography.fontSize.buttonText,
-                borderRadius: uiConfig.borderRadius.md
-              }}
-            >
-              Submit
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList 
-          className={`grid w-full grid-cols-2 mb-8`}
+        <h1 
+          className="text-4xl font-bold mb-6 text-center"
           style={{
-            marginBottom: isMobile ? '1.5rem' : '2rem'
+            fontSize: isMobile ? uiConfig.typography.fontSize.mobile.formTitle : uiConfig.typography.fontSize.formTitle,
+            fontWeight: uiConfig.typography.fontWeight.bold,
+            marginBottom: isMobile ? '1.5rem' : '2rem',
+            color: colors.theme.primary
           }}
         >
-          <TabsTrigger
-            value="application"
-            disabled={
-              ["submitted", "accepted", "waitlisted", "confirmed"].includes(
-                applicationStatus
-              ) && !isLoading
-            }
-            style={{
-              backgroundColor:
-                activeTab === "application"
-                  ? colors.theme.primary
-                  : colors.theme.background,
-              color:
-                activeTab === "application"
-                  ? colors.theme.buttonText
-                  : colors.theme.foreground,
-              borderColor: colors.theme.inputBorder,
-              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText,
-              fontWeight: uiConfig.typography.fontWeight.medium,
-              padding: isMobile ? uiConfig.spacing.mobile.buttonPadding : uiConfig.spacing.buttonPadding,
-              borderRadius: uiConfig.borderRadius.md
-            }}
-          >
-            Application Form
-          </TabsTrigger>
-          <TabsTrigger
-            value="status"
-            disabled={
-              applicationStatus === "not_started" &&
-              !isLoading
-            }
-            style={{
-              backgroundColor:
-                activeTab === "status"
-                  ? colors.theme.primary
-                  : colors.theme.background,
-              color:
-                activeTab === "status"
-                  ? colors.theme.buttonText
-                  : colors.theme.foreground,
-              borderColor: colors.theme.inputBorder,
-              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText,
-              fontWeight: uiConfig.typography.fontWeight.medium,
-              padding: isMobile ? uiConfig.spacing.mobile.buttonPadding : uiConfig.spacing.buttonPadding,
-              borderRadius: uiConfig.borderRadius.md
-            }}
-          >
-            Application Status
-          </TabsTrigger>
-        </TabsList>
+          Hackathon Application
+        </h1>
 
-        <Card
-          style={{
+        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <AlertDialogContent style={{
+            borderRadius: uiConfig.borderRadius.md,
             backgroundColor: colors.theme.background,
-            borderColor: colors.theme.inputBorder,
-            borderRadius: uiConfig.borderRadius.lg,
-            boxShadow: uiConfig.shadows.md
-          }}
-          className="border-2 shadow-xl"
-        >
-          <TabsContent value="application" className="mt-0">
-            <CardHeader style={{
-              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-            }}>
-              <CardTitle 
-                className="text-2xl"
+            border: `1px solid ${colors.theme.inputBorder}`,
+            padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+          }}>
+            <AlertDialogHeader>
+              <AlertDialogTitle style={{
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+                fontWeight: uiConfig.typography.fontWeight.bold,
+                color: colors.theme.primary
+              }}>
+                Submit Application?
+              </AlertDialogTitle>
+              <AlertDialogDescription style={{
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
+                color: colors.theme.secondary
+              }}>
+                Are you sure you want to submit your application? You won't be
+                able to make changes after submission.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className={isMobile ? 'flex-col space-y-2' : ''}>
+              <AlertDialogCancel 
                 style={{
-                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-                  fontWeight: uiConfig.typography.fontWeight.bold,
-                  color: colors.theme.primary
+                  fontSize: uiConfig.typography.fontSize.buttonText,
+                  borderRadius: uiConfig.borderRadius.md
                 }}
               >
-                Hackathon Application
-              </CardTitle>
-              <CardDescription style={{ 
-                color: colors.palette.foreground,
-                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
-              }}>
-                Fill out the form below to apply for the hackathon.
-                {isSaving && <span className="ml-2">(Saving...)</span>}
-                {lastSaved && !isSaving && (
-                  <div className="mt-2 text-xs">
-                    Last saved:{" "}
-                    {new Date(lastSaved).toLocaleString(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </div>
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent style={{
-              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-            }}>
-              <ApplicationForm
-                formData={formData}
-                onChange={handleFormChange}
-                onSubmit={(data) => {
-                  if (data) {
-                    // If data is directly provided, bypass the confirmation dialog
-                    handleFormSubmit(data);
-                  } else {
-                    // Otherwise, go through the regular flow with validation
-                    prepareSubmission();
-                  }
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => handleFormSubmit(submissionData)}
+                className="bg-theme-primary text-white hover:bg-theme-primary/90"
+                style={{
+                  backgroundColor: colors.theme.primary,
+                  color: colors.theme.buttonText,
+                  fontSize: uiConfig.typography.fontSize.buttonText,
+                  borderRadius: uiConfig.borderRadius.md
                 }}
-                isSubmitted={["submitted", "accepted", "waitlisted", "confirmed"].includes(applicationStatus)}
-                isSubmitting={isSubmitting}
-              />
-            </CardContent>
-          </TabsContent>
+              >
+                Submit
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-          <TabsContent value="status" className="mt-0">
-            <CardHeader style={{
-              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-            }}>
-              <CardTitle 
-                className="text-2xl"
-                style={{
-                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-                  fontWeight: uiConfig.typography.fontWeight.bold,
-                  color: colors.theme.primary
-                }}
-              >
-                Application Status
-              </CardTitle>
-              <CardDescription style={{ 
-                color: colors.palette.foreground,
-                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList 
+            className={`grid w-full grid-cols-2 mb-8`}
+            style={{
+              marginBottom: isMobile ? '1.5rem' : '2rem'
+            }}
+          >
+            <TabsTrigger
+              value="application"
+              disabled={
+                ["submitted", "accepted", "waitlisted", "confirmed"].includes(
+                  applicationStatus
+                ) && !isLoading
+              }
+              style={{
+                backgroundColor:
+                  activeTab === "application"
+                    ? colors.theme.primary
+                    : colors.theme.background,
+                color:
+                  activeTab === "application"
+                    ? colors.theme.buttonText
+                    : colors.theme.foreground,
+                borderColor: colors.theme.inputBorder,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText,
+                fontWeight: uiConfig.typography.fontWeight.medium,
+                padding: isMobile ? uiConfig.spacing.mobile.buttonPadding : uiConfig.spacing.buttonPadding,
+                borderRadius: uiConfig.borderRadius.md
+              }}
+            >
+              Application Form
+            </TabsTrigger>
+            <TabsTrigger
+              value="status"
+              disabled={
+                applicationStatus === "not_started" &&
+                !isLoading
+              }
+              style={{
+                backgroundColor:
+                  activeTab === "status"
+                    ? colors.theme.primary
+                    : colors.theme.background,
+                color:
+                  activeTab === "status"
+                    ? colors.theme.buttonText
+                    : colors.theme.foreground,
+                borderColor: colors.theme.inputBorder,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText,
+                fontWeight: uiConfig.typography.fontWeight.medium,
+                padding: isMobile ? uiConfig.spacing.mobile.buttonPadding : uiConfig.spacing.buttonPadding,
+                borderRadius: uiConfig.borderRadius.md
+              }}
+            >
+              Application Status
+            </TabsTrigger>
+          </TabsList>
+
+          <Card
+            style={{
+              backgroundColor: uiConfig.inputStyles.sectionBackground,
+              borderColor: colors.theme.inputBorder,
+              borderRadius: uiConfig.inputStyles.sectionBorderRadius,
+              boxShadow: uiConfig.inputStyles.sectionBoxShadow,
+              overflow: 'hidden',
+              width: '100%'
+            }}
+            className="border shadow-md"
+          >
+            <TabsContent value="application" className="mt-0">
+              <CardHeader style={{
+                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
               }}>
-                Check the status of your hackathon application.
-              </CardDescription>
-            </CardHeader>
-            <CardContent style={{
-              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-            }}>
-              <ApplicationStatus status={applicationStatus} />
-            </CardContent>
-          </TabsContent>
-        </Card>
-      </Tabs>
+                <CardTitle 
+                  className="text-2xl"
+                  style={{
+                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+                    fontWeight: uiConfig.typography.fontWeight.bold,
+                    color: colors.theme.primary
+                  }}
+                >
+                  Hackathon Application
+                </CardTitle>
+                <CardDescription style={{ 
+                  color: colors.palette.foreground,
+                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
+                }}>
+                  Fill out the form below to apply for the hackathon.
+                  {isSaving && <span className="ml-2">(Saving...)</span>}
+                  {lastSaved && !isSaving && (
+                    <div className="mt-2 text-xs">
+                      Last saved:{" "}
+                      {new Date(lastSaved).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </div>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent style={{
+                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+              }}>
+                <ApplicationForm
+                  formData={formData}
+                  onChange={handleFormChange}
+                  onSubmit={(data) => {
+                    if (data) {
+                      // If data is directly provided, bypass the confirmation dialog
+                      handleFormSubmit(data);
+                    } else {
+                      // Otherwise, go through the regular flow with validation
+                      prepareSubmission();
+                    }
+                  }}
+                  isSubmitted={["submitted", "accepted", "waitlisted", "confirmed"].includes(applicationStatus)}
+                  isSubmitting={isSubmitting}
+                />
+              </CardContent>
+            </TabsContent>
+
+            <TabsContent value="status" className="mt-0">
+              <CardHeader style={{
+                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+              }}>
+                <CardTitle 
+                  className="text-2xl"
+                  style={{
+                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+                    fontWeight: uiConfig.typography.fontWeight.bold,
+                    color: colors.theme.primary
+                  }}
+                >
+                  Application Status
+                </CardTitle>
+                <CardDescription style={{ 
+                  color: colors.palette.foreground,
+                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
+                }}>
+                  Check the status of your hackathon application.
+                </CardDescription>
+              </CardHeader>
+              <CardContent style={{
+                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+              }}>
+                <ApplicationStatus status={applicationStatus} />
+              </CardContent>
+            </TabsContent>
+          </Card>
+        </Tabs>
+      </div>
     </div>
   );
 }
