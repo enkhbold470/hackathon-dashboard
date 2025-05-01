@@ -3,7 +3,13 @@ export type SiteConfig = {
   title: string;
   description: string;
   url: string;
-  ogImage: string;
+  ogImage: {
+    url: string;
+    height: number;
+    width: number;
+  };
+  ogUrl: string;
+  ogType: string;
   links: {
     github: string;
   };
@@ -17,9 +23,15 @@ export const siteConfig: SiteConfig = {
   title: "DA Hacks 3.5 Application Portal",
   description: "Apply for DA Hacks 3.5 - A hackathon for students to showcase their skills and creativity.",
   url: "https://portal.deanzahacks.com",
-  ogImage: "https://github.com/da-hacks/da-hacks-3.5-application-portal/blob/main/public/og.png",
+  ogImage: {
+    url: "https://raw.githubusercontent.com/enkhbold470/hackathon-dashboard/refs/heads/main/public/og.png",
+    height: 630,
+    width: 1200
+  },
+  ogUrl: "https://portal.deanzahacks.com",
+  ogType: "website",
   links: {
-    github: "https://github.com/da-hacks/hackathon-dashboard",
+    github: "https://github.com/enkhbold470/hackathon-dashboard",
   },
   contacts: {
     email: "inky@deanzahacks.com",
