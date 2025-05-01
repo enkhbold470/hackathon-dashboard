@@ -70,12 +70,12 @@ export const spacing = {
 export const inputSizes = {
   shortAnswer: {
     width: '100%',
-    maxWidth: '400px',
+    maxWidth: '100%',
     height: '36px'
   },
   paragraph: {
     width: '100%',
-    maxWidth: '600px',
+    maxWidth: '100%',
     minHeight: '100px'
   },
   checkbox: {
@@ -84,7 +84,7 @@ export const inputSizes = {
   },
   dropdown: {
     width: '100%',
-    maxWidth: '300px',
+    maxWidth: '100%',
     height: '40px'
   },
   radio: {
@@ -131,6 +131,33 @@ export const transitions = {
   fast: 'all 0.1s ease-in-out'
 };
 
+// Layout configuration
+export const layout = {
+  maxWidth: '640px',
+  containerWidth: '100%',
+  contentMargin: '0 auto',
+  contentPadding: '1.5rem',
+  formCardPadding: '1.5rem',
+  mobilePadding: '1rem'
+};
+
+// Google Forms style input configuration
+export const inputStyles = {
+  // Seamless input style like Google Forms
+  borderWidth: '0',
+  borderBottom: '1px solid #dadce0',
+  borderRadius: '0',
+  backgroundColor: 'transparent',
+  hoverBorderBottom: '2px solid #4285f4',
+  focusBorderBottom: '2px solid #4285f4',
+  focusBoxShadow: 'none',
+  outlineStyle: 'none',
+  // Section styling
+  sectionBackground: 'white',
+  sectionBorderRadius: '8px',
+  sectionBoxShadow: '0 2px 1px -1px rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 1px 3px 0 rgba(0,0,0,.12)'
+};
+
 // Combined theme object
 const uiConfig = {
   colors,
@@ -141,6 +168,8 @@ const uiConfig = {
   borderRadius,
   shadows,
   transitions,
+  layout,
+  inputStyles,
   
   // Current theme selection
   currentTheme: {
