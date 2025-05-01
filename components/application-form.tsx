@@ -137,7 +137,7 @@ const FormFieldComponent = memo(({
               return (
                 <FormItem>
                   <FormLabel style={styles.label}>
-                    {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                   {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -160,7 +160,7 @@ const FormFieldComponent = memo(({
               return (
                 <FormItem>
                   <FormLabel style={styles.label}>
-                    {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                  {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -182,7 +182,7 @@ const FormFieldComponent = memo(({
               return (
                 <FormItem>
                   <FormLabel style={styles.label}>
-                    {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                    {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                   <Select
                     onValueChange={(value) => {
@@ -213,7 +213,7 @@ const FormFieldComponent = memo(({
               return (
                 <FormItem>
                   <FormLabel style={styles.label}>
-                    {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                    {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                   <FormControl>
                     <RadioGroup
@@ -252,7 +252,7 @@ const FormFieldComponent = memo(({
                       />
                     </FormControl>
                     <FormLabel style={styles.label} className="text-sm font-medium">
-                      {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                      {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                       {fieldName === "agreeToTerms" && (
                         <span className="text-blue-500 cursor-pointer">
                           Terms and Conditions
@@ -268,7 +268,7 @@ const FormFieldComponent = memo(({
               return (
                 <FormItem>
                   <FormLabel style={styles.label}>
-                    {fieldConfig.label} - Unsupported field type
+                    {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                 </FormItem>
               )
