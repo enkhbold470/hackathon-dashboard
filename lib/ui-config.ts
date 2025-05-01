@@ -79,7 +79,7 @@ export const inputSizes = {
     minHeight: '100px'
   },
   checkbox: {
-    size: '18px',
+    size: '24px',
     spacing: '10px'
   },
   dropdown: {
