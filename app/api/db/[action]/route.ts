@@ -96,6 +96,8 @@ export async function POST(
         });
       }
       
+
+
       default:
         console.log(`Invalid action: ${action}`);
         return NextResponse.json(
@@ -142,6 +144,7 @@ export async function GET(
           application: application || null
         });
       }
+      
       
       default:
         console.log(`Invalid GET action: ${action}`);

@@ -53,7 +53,7 @@ export const applicationData = {
         type: "select",
         options: [
           { value: "0", label: "None (🎈 First time!)" },
-          { value: "2-5", label: "2-5" },
+          { value: "1-5", label: "1-5" },
           { value: "5-10", label: "5-10" },
           { value: "10+", label: "10+" }
         ],
