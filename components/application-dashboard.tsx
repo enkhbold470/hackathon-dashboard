@@ -112,7 +112,7 @@ export default function ApplicationDashboard() {
   };
 
   const prepareSubmission = () => {
-    console.log('prepareSubmission called', formData);
+    console.log('prepareSubmission called', { status: formData.status });
     const requiredFields = ["cwid", "full_name"];
     const missingFields = requiredFields.filter((field) => !formData[field]);
 
@@ -155,8 +155,13 @@ export default function ApplicationDashboard() {
 
     console.log('handleFormSubmit called with data:', data || submissionData);
     setIsSubmitting(true);
-    setShowConfirmDialog(false);
+    
+    // Only close the dialog if it was shown
+    if (showConfirmDialog) {
+      setShowConfirmDialog(false);
+    }
 
+    // If data is directly provided, use it directly instead of going through validation
     const submissionPayload = data || submissionData;
 
     try {
@@ -349,9 +354,17 @@ export default function ApplicationDashboard() {
               <ApplicationForm
                 formData={formData}
                 onChange={handleFormChange}
-                onSubmit={prepareSubmission}
+                onSubmit={(data) => {
+                  if (data) {
+                    // If data is directly provided, bypass the confirmation dialog
+                    handleFormSubmit(data);
+                  } else {
+                    // Otherwise, go through the regular flow with validation
+                    prepareSubmission();
+                  }
+                }}
                 isSubmitted={["submitted", "accepted", "waitlisted", "confirmed"].includes(applicationStatus)}
-                isLoading={isLoading || isSubmitting}
+                isSubmitting={isSubmitting}
               />
             </CardContent>
           </TabsContent>
