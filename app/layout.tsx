@@ -10,10 +10,32 @@ import {
   UserButton
 } from '@clerk/nextjs'
 import { Providers } from "./providers";
+import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "DA Hacks 3.5 Portal",
-  description: "Apply as a Hacker here!",
+  title: siteConfig.title,
+  description: siteConfig.description,
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    images: [siteConfig.ogImage],
+  },
+  authors: {
+    name: siteConfig.name,
+    url: siteConfig.url,
+  },
+  metadataBase: new URL(siteConfig.url),
+  robots: {
+    index: true,
+    follow: true,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+  },
 };
 
 export default function RootLayout({
@@ -23,6 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+ 
       <body>
         <ClerkProvider>
           <Providers>
