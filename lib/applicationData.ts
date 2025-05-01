@@ -26,7 +26,7 @@ export const applicationData = {
       discord: {
         label: "💬 Discord Username",
         type: "text",
-        placeholder: "inky3457",
+        placeholder: "For example: inky3457",
         validationRules: {
           required: true,
           minLength: 3,

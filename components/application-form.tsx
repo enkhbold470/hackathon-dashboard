@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Check } from "lucide-react"
+import Link from "next/link"
 import colors from "@/lib/colors"
 import uiConfig from "@/lib/ui-config"
 import { applicationData, toDbColumn } from "@/lib/applicationData"
@@ -372,6 +373,7 @@ const FormFieldComponent = memo(({
                 <FormItem className="mb-4">
                   <div className="flex items-center space-x-2">
                     <FormControl>
+                      {/* increase size of the checkbox */}
                       <Checkbox
                         checked={fieldValue === true}
                         onCheckedChange={(checked) => {
@@ -394,7 +396,7 @@ const FormFieldComponent = memo(({
                       {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                       {fieldName === "agreeToTerms" && (
                         <span className="text-blue-500 cursor-pointer">
-                          Terms and Conditions
+                          <Link href="https://github.com/da-hacks/legal/blob/4eb1f4413cdfa7fce2f5914db4786d89b2113176/media-waiver.md" target="_blank">Terms and Conditions</Link>
                         </span>
                       )}
                     </FormLabel>

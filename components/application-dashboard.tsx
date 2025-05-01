@@ -418,7 +418,7 @@ export default function ApplicationDashboard() {
             className="border shadow-md"
           >
             <TabsContent value="application" className="mt-0">
-              <CardHeader style={{
+              {/* <CardHeader style={{
                 padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
               }}>
                 <CardTitle 
@@ -447,7 +447,7 @@ export default function ApplicationDashboard() {
                     </div>
                   )}
                 </CardDescription>
-              </CardHeader>
+              </CardHeader> */}
               <CardContent style={{
                 padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
               }}>
