@@ -69,10 +69,10 @@ type FormData = z.infer<typeof formSchema>
 
 interface ApplicationFormProps {
   onChange: (data: FormData) => void
-  onSubmit: () => void
+  onSubmit: (data?: FormData) => void
   formData: Record<string, any>
-  isSubmitted: boolean
-  isLoading: boolean
+  isSubmitting?: boolean
+  isSubmitted?: boolean
 }
 
 // Field option type
@@ -89,12 +89,11 @@ const getDefaultValues = () => {
     if (section.fields) {
       Object.entries(section.fields).forEach(([fieldName, fieldConfig]) => {
         const dbFieldName = toDbColumn(fieldName);
-        const validationRules = fieldConfig.validationRules || {}
         
         if (fieldConfig.type === "checkbox") {
           defaults[dbFieldName] = false
         } else {
-          defaults[dbFieldName] = validationRules.required ? "" : null
+          defaults[dbFieldName] = ""
         }
       })
     }
@@ -109,7 +108,7 @@ const FormFieldComponent = memo(({
   fieldConfig,
   control,
   isSubmitted,
-  isLoading,
+  isSubmitting,
   handleFieldChange,
   renderSavingIndicator,
   styles
@@ -117,8 +116,8 @@ const FormFieldComponent = memo(({
   fieldName: string,
   fieldConfig: any,
   control: any,
-  isSubmitted: boolean,
-  isLoading: boolean,
+  isSubmitted?: boolean,
+  isSubmitting?: boolean,
   handleFieldChange: (name: string, value: any) => void,
   renderSavingIndicator: (name: string) => React.ReactNode,
   styles: any
@@ -131,6 +130,9 @@ const FormFieldComponent = memo(({
         control={control}
         name={dbFieldName}
         render={({ field }) => {
+          // Ensure field value is never null
+          const fieldValue = field.value === null ? "" : field.value;
+          
           switch (fieldConfig.type) {
             case "text":
             case "email":
@@ -144,12 +146,13 @@ const FormFieldComponent = memo(({
                       {...field}
                       placeholder={fieldConfig.placeholder}
                       style={styles.input}
+                      value={fieldValue || ""}
                       onChange={(e) => {
                         field.onChange(e)
                         handleFieldChange(dbFieldName, e.target.value)
                       }}
                       type={fieldConfig.type}
-                      disabled={isSubmitted || isLoading}
+                      disabled={isSubmitted || isSubmitting}
                     />
                   </FormControl>
                   <FormMessage style={styles.errorMessage} />
@@ -167,11 +170,12 @@ const FormFieldComponent = memo(({
                       {...field}
                       placeholder={fieldConfig.placeholder}
                       style={styles.input}
+                      value={fieldValue || ""}
                       onChange={(e) => {
                         field.onChange(e)
                         handleFieldChange(dbFieldName, e.target.value)
                       }}
-                      disabled={isSubmitted || isLoading}
+                      disabled={isSubmitted || isSubmitting}
                     />
                   </FormControl>
                   <FormMessage style={styles.errorMessage} />
@@ -189,8 +193,8 @@ const FormFieldComponent = memo(({
                       field.onChange(value)
                       handleFieldChange(dbFieldName, value)
                     }}
-                    defaultValue={field.value}
-                    disabled={isSubmitted || isLoading}
+                    defaultValue={fieldValue || ""}
+                    disabled={isSubmitted || isSubmitting}
                   >
                     <FormControl>
                       <SelectTrigger style={styles.input}>
@@ -221,8 +225,8 @@ const FormFieldComponent = memo(({
                         field.onChange(value)
                         handleFieldChange(dbFieldName, value)
                       }}
-                      defaultValue={field.value}
-                      disabled={isSubmitted || isLoading}
+                      defaultValue={fieldValue || ""}
+                      disabled={isSubmitted || isSubmitting}
                       className="flex flex-col space-y-2"
                     >
                       {fieldConfig.options?.map((option: FieldOption) => (
@@ -243,12 +247,12 @@ const FormFieldComponent = memo(({
                   <div className="flex items-center space-x-2">
                     <FormControl>
                       <Checkbox
-                        checked={field.value}
+                        checked={fieldValue === true}
                         onCheckedChange={(checked) => {
                           field.onChange(checked)
                           handleFieldChange(dbFieldName, checked)
                         }}
-                        disabled={isSubmitted || isLoading}
+                        disabled={isSubmitted || isSubmitting}
                       />
                     </FormControl>
                     <FormLabel style={styles.label} className="text-sm font-medium">
@@ -285,8 +289,8 @@ function ApplicationForm({
   onChange,
   onSubmit,
   formData,
+  isSubmitting,
   isSubmitted,
-  isLoading,
 }: ApplicationFormProps) {
   const { toast } = useToast()
   const [savingFields, setSavingFields] = useState<Record<string, boolean>>({})
@@ -299,7 +303,7 @@ function ApplicationForm({
       borderColor: colors.theme.inputBorder,
       color: colors.theme.inputText,
     },
-    label: {
+    label: { 
       color: colors.theme.foreground,
     },
     sectionTitle: {
@@ -316,7 +320,7 @@ function ApplicationForm({
       color: colors.theme.buttonText,
     }
   }), []);
-
+  
   // Saving indicator component
   const renderSavingIndicator = (fieldName: string) => {
     if (savingFields[fieldName]) {
@@ -337,7 +341,7 @@ function ApplicationForm({
     defaultValues: { ...getDefaultValues(), ...formData },
     mode: "onChange"
   })
-
+  
   // Handle field change for auto-save
   const handleFieldChange = async (name: string, value: any) => {
     setSavingFields(prev => ({ ...prev, [name]: true }))
@@ -353,8 +357,8 @@ function ApplicationForm({
       }, 2000)
     } catch (error) {
       toast({
-        title: "Error saving changes",
-        description: "Please try again.",
+        title: "Error",
+        description: "Failed to save changes. Please try again.",
         variant: "destructive"
       })
     } finally {
@@ -366,7 +370,7 @@ function ApplicationForm({
   const handleSubmit = (data: FormData) => {
     console.log('ApplicationForm handleSubmit called with data:', data);
     console.log('Form validation state:', form.formState);
-    onSubmit();
+    onSubmit(data);
   }
 
   return (
@@ -390,7 +394,7 @@ function ApplicationForm({
                   fieldConfig={fieldConfig}
                   control={form.control}
                   isSubmitted={isSubmitted}
-                  isLoading={isLoading}
+                  isSubmitting={isSubmitting}
                   handleFieldChange={handleFieldChange}
                   renderSavingIndicator={renderSavingIndicator}
                   styles={styles}
@@ -404,11 +408,11 @@ function ApplicationForm({
         <div className="sticky bottom-0 bg-background p-4 border-t border-border z-10">
           <Button 
             type="submit"
-            disabled={isSubmitted || isLoading || !form.formState.isValid} 
+            disabled={isSubmitted || isSubmitting || !form.formState.isValid} 
             className="w-full"
             style={styles.button}
           >
-            {isLoading ? "Processing..." : isSubmitted ? "Submitted" : "Submit Application"}
+            {isSubmitting ? "Processing..." : isSubmitted ? "Submitted" : "Submit Application"}
           </Button>
           
           {!form.formState.isValid && (
