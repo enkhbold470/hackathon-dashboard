@@ -364,7 +364,9 @@ function ApplicationForm({
 
   // Submit form handler
   const handleSubmit = (data: FormData) => {
-    onSubmit()
+    console.log('ApplicationForm handleSubmit called with data:', data);
+    console.log('Form validation state:', form.formState);
+    onSubmit();
   }
 
   return (

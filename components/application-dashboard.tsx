@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -31,7 +31,7 @@ type Status =
   | "in_progress"
   | "submitted"
   | "accepted"
-  | "rejected"
+  | "waitlisted"
   | "confirmed";
 
 export default function ApplicationDashboard() {
@@ -48,29 +48,41 @@ export default function ApplicationDashboard() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasUnsavedChanges = useRef(false);
+
+  // Clear auto-save timer on component unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearInterval(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchApplication = async () => {
       try {
-        const response = await fetch("/api/db/get-application");
-        if (!response.ok) {
-          throw new Error("Failed to fetch application data");
-        }
-        const data = await response.json();
-
-        if (data.application) {
-          setFormData(data.application);
-          setApplicationStatus(data.application.status || "not_started");
+        // Use the new API endpoint
+        const response = await fetch('/api/db/get', {
+          method: 'GET',
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.application) {
+          setFormData(result.application);
+          setApplicationStatus(result.application.status as Status || "not_started");
 
           if (
-            ["submitted", "accepted", "rejected", "confirmed"].includes(
-              data.application.status
+            ["submitted", "accepted", "waitlisted", "confirmed"].includes(
+              result.application.status
             )
           ) {
             setActiveTab("status");
           }
 
-          if (data.application.status === "accepted") {
+          if (result.application.status === "accepted") {
             setIsExploding(true);
           }
         } else {
@@ -90,37 +102,17 @@ export default function ApplicationDashboard() {
   const handleFormChange = async (newData: Record<string, any>) => {
     const updatedFormData = { ...formData, ...newData };
     setFormData(updatedFormData);
+    hasUnsavedChanges.current = true;
 
     if (applicationStatus === "not_started") {
       setApplicationStatus("in_progress");
     }
-
-    setIsSaving(true);
-
-    try {
-      const response = await fetch("/api/db/save-application", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...updatedFormData,
-          status: applicationStatus,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save application draft");
-      }
-
-      setLastSaved(new Date());
-    } catch (error: any) {
-      toast.error(`Failed to save changes: ${error.message}`);
-    } finally {
-      setIsSaving(false);
-    }
+    
+    // Don't save automatically when changes are made - only on submission
   };
 
   const prepareSubmission = () => {
+    console.log('prepareSubmission called', formData);
     const requiredFields = ["cwid", "full_name"];
     const missingFields = requiredFields.filter((field) => !formData[field]);
 
@@ -129,6 +121,7 @@ export default function ApplicationDashboard() {
         field === "cwid" ? "CWID" : field === "full_name" ? "Full Name" : field
       );
 
+      console.log('Missing required fields:', missingFieldLabels);
       toast.error(
         `Please fill in all required fields: ${missingFieldLabels.join(", ")}`
       );
@@ -136,6 +129,7 @@ export default function ApplicationDashboard() {
     }
 
     if (!formData.agree_to_terms) {
+      console.log('Terms not agreed to');
       toast.error(
         "You must agree to the terms and conditions to submit your application."
       );
@@ -148,41 +142,48 @@ export default function ApplicationDashboard() {
       status: "submitted",
     };
 
+    console.log('Setting submission data:', data);
     setSubmissionData(data);
     setShowConfirmDialog(true);
   };
 
   const handleFormSubmit = async (data?: Record<string, any>) => {
     if (isSubmitting) {
+      console.log('Already submitting, skipping duplicate submission');
       return;
     }
 
+    console.log('handleFormSubmit called with data:', data || submissionData);
     setIsSubmitting(true);
     setShowConfirmDialog(false);
 
     const submissionPayload = data || submissionData;
 
     try {
-      const response = await fetch("/api/db/submit-application", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      console.log('Sending API request to /api/db/submit');
+      // Use the new API endpoint for submission
+      const response = await fetch('/api/db/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(submissionPayload),
       });
-
+      
+      console.log('API response received, status:', response.status);
       const result = await response.json();
+      console.log('API result:', result);
 
-      if (!response.ok) {
-        if (result.error && typeof result.error === "string") {
-          throw new Error(result.error);
-        }
-        throw new Error("Failed to submit application");
+      if (result.success) {
+        setFormData(result.application);
+        setApplicationStatus("submitted");
+        setActiveTab("status");
+        toast.success("Application submitted successfully!");
+      } else {
+        throw new Error(result.error || "Failed to submit application");
       }
-
-      setFormData(result.application);
-      setApplicationStatus("submitted");
-      setActiveTab("status");
-      toast.success("Application submitted successfully!");
     } catch (error: any) {
+      console.error('Submission error:', error);
       toast.error(`Submission failed: ${error.message}`);
       setSubmissionData({});
     } finally {
@@ -192,17 +193,23 @@ export default function ApplicationDashboard() {
 
   const handleConfirmAttendance = async () => {
     try {
-      const response = await fetch("/api/db/confirm-attendance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      // Use the new API endpoint
+      const response = await fetch('/api/db/confirm-attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to confirm attendance");
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setApplicationStatus("confirmed");
+        toast.success("Attendance confirmed!");
+      } else {
+        throw new Error(result.error || "Failed to confirm attendance");
       }
-
-      setApplicationStatus("confirmed");
-      toast.success("Attendance confirmed!");
     } catch (error: any) {
       toast.error(`Failed to confirm attendance: ${error.message}`);
     }
@@ -210,17 +217,23 @@ export default function ApplicationDashboard() {
   
   const handleDeclineAttendance = async () => {
     try {
-      const response = await fetch("/api/db/decline-attendance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      // Use the new API endpoint
+      const response = await fetch('/api/db/decline-attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to decline attendance");
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setApplicationStatus("waitlisted");
+        toast.success("Attendance declined. We hope to see you at another event!");
+      } else {
+        throw new Error(result.error || "Failed to decline attendance");
       }
-
-      setApplicationStatus("rejected");
-      toast.success("Attendance declined. We hope to see you at another event!");
     } catch (error: any) {
       toast.error(`Failed to decline attendance: ${error.message}`);
     }
@@ -268,7 +281,7 @@ export default function ApplicationDashboard() {
           <TabsTrigger
             value="application"
             disabled={
-              ["submitted", "accepted", "rejected", "confirmed"].includes(
+              ["submitted", "accepted", "waitlisted", "confirmed"].includes(
                 applicationStatus
               ) && !isLoading
             }
@@ -320,7 +333,8 @@ export default function ApplicationDashboard() {
               <CardTitle className="text-2xl">Hackathon Application</CardTitle>
               <CardDescription style={{ color: colors.palette.foreground }}>
                 Fill out the form below to apply for the hackathon.
-                {lastSaved && (
+                {isSaving && <span className="ml-2">(Saving...)</span>}
+                {lastSaved && !isSaving && (
                   <div className="mt-2 text-xs">
                     Last saved:{" "}
                     {new Date(lastSaved).toLocaleString(undefined, {
@@ -336,7 +350,7 @@ export default function ApplicationDashboard() {
                 formData={formData}
                 onChange={handleFormChange}
                 onSubmit={prepareSubmission}
-                isSubmitted={["submitted", "accepted", "rejected", "confirmed"].includes(applicationStatus)}
+                isSubmitted={["submitted", "accepted", "waitlisted", "confirmed"].includes(applicationStatus)}
                 isLoading={isLoading || isSubmitting}
               />
             </CardContent>
