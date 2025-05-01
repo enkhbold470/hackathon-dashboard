@@ -8,7 +8,7 @@ import { CheckCircle, Clock, XCircle, AlertCircle, PartyPopper, Terminal, Code }
 import { motion } from "framer-motion"
 import colors from "@/lib/colors"
 import { applicationStatus } from "@/lib/applicationData"
-type ApplicationStatus = "not_started" | "in_progress" | "submitted" | "accepted" | "rejected" | "confirmed"
+type ApplicationStatus = "not_started" | "in_progress" | "submitted" | "accepted" | "waitlisted" | "confirmed"
 
 interface ApplicationStatusProps {
   status: ApplicationStatus

@@ -275,11 +275,11 @@ export const applicationStatus = {
       message: "We're excited to have you join us! Please check your email for further instructions on how to confirm your spot.",
       successMessage: "ACCESS GRANTED: Welcome to DAHacks 3.5! Your application has been approved."
     },
-    rejected: {
+    waitlisted: {
       title: "Waitlisted",
       description: "We were thrilled by your application, but unfortunately due to limit of capacity, you were waitlisted.",
       icon: "XCircle",
-      color: "danger",
+      color: "warning",
       message: "Thank you for your interest. We'll notify you if a spot opens up."
     },
     confirmed: {
