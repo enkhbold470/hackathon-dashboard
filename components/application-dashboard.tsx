@@ -117,6 +117,32 @@ export default function ApplicationDashboard() {
     fetchApplication();
   }, []);
 
+  // For confetti effect when accepted
+  useEffect(() => {
+    if (applicationStatus === "accepted") {
+      setIsExploding(true);
+    }
+  }, [applicationStatus]);
+
+  // Set up event listeners for attendance confirmation/declining
+  useEffect(() => {
+    const handleConfirm = () => {
+      handleConfirmAttendance();
+    };
+    
+    const handleDecline = () => {
+      handleDeclineAttendance();
+    };
+
+    window.addEventListener('confirmAttendance', handleConfirm);
+    window.addEventListener('declineAttendance', handleDecline);
+    
+    return () => {
+      window.removeEventListener('confirmAttendance', handleConfirm);
+      window.removeEventListener('declineAttendance', handleDecline);
+    };
+  }, []);
+
   const handleFormChange = async (newData: Record<string, any>) => {
     const updatedFormData = { ...formData, ...newData };
     setFormData(updatedFormData);
