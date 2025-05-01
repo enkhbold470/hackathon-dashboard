@@ -100,6 +100,10 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
 
   const statusDetails = getStatusDetails()
 
+  // These functions should be passed via props in a real implementation
+  const onConfirmSpot = () => window.dispatchEvent(new CustomEvent('confirmAttendance'))
+  const onDeclineSpot = () => window.dispatchEvent(new CustomEvent('declineAttendance'))
+
   return (
     <motion.div 
       className="space-y-8" 
@@ -248,7 +252,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                   </h4>
                   
                   <div 
-                    className="font-mono text-base mb-4" 
+                    className="font-mono text-base mb-6" 
                     style={{ 
                       color: colors.theme.primary,
                       fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
@@ -258,16 +262,36 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                     {isTyping && <span className="animate-pulse">|</span>}
                   </div>
                   
-                  <motion.div
-                    className="w-full h-1.5 mt-6 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 1.5, delay: 0.5 }}
-                    style={{
-                      background: `linear-gradient(to right, ${colors.theme.primary}, ${colors.theme.secondary})`,
-                      borderRadius: uiConfig.borderRadius.full,
-                    }}
-                  />
+                  <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-4 mt-4`}>
+                    <button
+                      onClick={onConfirmSpot}
+                      className="flex-1 py-2 px-4 rounded-md font-medium text-center"
+                      style={{
+                        backgroundColor: colors.theme.success,
+                        color: colors.theme.buttonText,
+                        fontSize: uiConfig.typography.fontSize.buttonText,
+                        fontWeight: uiConfig.typography.fontWeight.medium,
+                        borderRadius: uiConfig.borderRadius.md,
+                        transition: uiConfig.transitions.default
+                      }}
+                    >
+                      Confirm My Spot
+                    </button>
+                    <button
+                      onClick={onDeclineSpot}
+                      className="flex-1 py-2 px-4 rounded-md font-medium text-center"
+                      style={{
+                        backgroundColor: colors.theme.danger,
+                        color: colors.theme.buttonText,
+                        fontSize: uiConfig.typography.fontSize.buttonText,
+                        fontWeight: uiConfig.typography.fontWeight.medium,
+                        borderRadius: uiConfig.borderRadius.md,
+                        transition: uiConfig.transitions.default
+                      }}
+                    >
+                      Decline My Spot
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -338,55 +362,6 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
           </CardContent>
         </Card>
       </motion.div>
-
-      {(status === "submitted" || status === "in_progress") && (
-        <motion.div
-          className="rounded-lg border p-6 relative overflow-hidden"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          style={{
-            backgroundColor: colors.theme.background,
-            borderColor: colors.theme.background,
-            padding: isMobile ? uiConfig.spacing.mobile.sectionPadding : uiConfig.spacing.sectionPadding,
-            borderRadius: uiConfig.borderRadius.lg,
-            boxShadow: uiConfig.shadows.sm,
-          }}
-        >
-          <div className="relative z-10">
-            <h4 
-              className="font-medium mb-4 text-lg" 
-              style={{ 
-                color: colors.theme.primary,
-                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-                fontWeight: uiConfig.typography.fontWeight.medium,
-              }}
-            >
-              What happens next?
-            </h4>
-            
-            <ol 
-              className="list-decimal list-inside space-y-4 text-base leading-relaxed" 
-              style={{ 
-                color: colors.theme.foreground,
-                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
-                lineHeight: uiConfig.typography.lineHeight.relaxed,
-              }}
-            >
-              {applicationStatus.hackathonInfo.nextSteps.map((step: string, index: number) => (
-                <motion.li
-                  key={index}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.5 + (index * 0.1) }}
-                >
-                  {step}
-                </motion.li>
-              ))}
-            </ol>
-          </div>
-        </motion.div>
-      )}
 
       <motion.div
         className="rounded-lg border p-6 relative overflow-hidden"
