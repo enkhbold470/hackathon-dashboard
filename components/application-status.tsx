@@ -136,14 +136,14 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
         <Card
           className="overflow-hidden relative shadow-lg"
           style={{
-            backgroundColor: colors.theme.cardBackground,
+            backgroundColor: colors.theme.background,
             borderColor: statusDetails.borderColor,
             borderWidth: "1px",
           }}
         >
           <CardHeader
             className="flex flex-row items-center gap-5 border-b pb-5"
-            style={{ borderColor: colors.theme.cardBorder }}
+            style={{ borderColor: colors.theme.background }}
           >
             <motion.div
               animate={animate ? { rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] } : {}}
@@ -185,7 +185,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                 <div className="relative z-10">
                   <h4 
                     className="font-semibold mb-4 flex items-center text-lg" 
-                    style={{ color: colors.theme.accent }}
+                    style={{ color: colors.theme.primary }}
                   >
                     <span className="mr-3">
                       <PartyPopper className="h-6 w-6" />
@@ -195,7 +195,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                   
                   <div 
                     className="font-mono text-base mb-4" 
-                    style={{ color: colors.theme.accent }}
+                    style={{ color: colors.theme.primary }}
                   >
                     {typedText}
                     {isTyping && <span className="animate-pulse">|</span>}
@@ -207,7 +207,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                     animate={{ width: "100%" }}
                     transition={{ duration: 1.5, delay: 0.5 }}
                     style={{
-                      background: `linear-gradient(to right, ${colors.theme.accent}, ${colors.theme.secondary})`,
+                      background: `linear-gradient(to right, ${colors.theme.primary}, ${colors.theme.secondary})`,
                     }}
                   />
                 </div>
@@ -239,17 +239,17 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                       backgroundColor: colors.theme.background,
                       borderColor: colors.theme.success,
                       borderWidth: "1px",
-                      boxShadow: `0 0 12px ${colors.theme.accent}`,
+                      boxShadow: `0 0 12px ${colors.theme.primary}`,
 
                     }}
                   >
                     <div
                       className="w-full h-full flex items-center justify-center"
-                      style={{ backgroundColor: colors.theme.cardBackground }}
+                      style={{ backgroundColor: colors.theme.background }}
                     >
                       <p 
                         className="text-sm text-center" 
-                        style={{ color: colors.theme.placeholderText }}
+                        style={{ color: colors.theme.foreground }}
                       >
                         QR code will appear here
                       </p>
@@ -258,7 +258,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                   
                   <p 
                     className="mt-4 text-sm text-center" 
-                    style={{ color: colors.theme.placeholderText }}
+                    style={{ color: colors.theme.foreground }}
                   >
                     Present this QR code when you arrive at the event
                   </p>
@@ -276,8 +276,8 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
           style={{
-            backgroundColor: colors.theme.cardBackground,
-            borderColor: colors.theme.cardBorder,
+            backgroundColor: colors.theme.background,
+            borderColor: colors.theme.background,
           }}
         >
           <div className="relative z-10">
@@ -313,8 +313,8 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.5 }}
         style={{
-          backgroundColor: colors.theme.cardBackground,
-          borderColor: colors.theme.cardBorder,
+          backgroundColor: colors.theme.background,
+          borderColor: colors.theme.background,
         }}
       >
         {/* //Info about the hackathon */}
@@ -344,7 +344,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                 
                 <p 
                   className="leading-relaxed" 
-                  style={{ color: colors.theme.placeholderText }}
+                  style={{ color: colors.theme.foreground }}
                 >
                   {section.title === "Questions?" ? (
                     <>
