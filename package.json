@@ -11,7 +11,8 @@
     "prisma:studio": "prisma studio",
     "prisma:push": "prisma db push",
     "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:migrate:deploy": "prisma migrate deploy"
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.17.0",
@@ -33,6 +34,7 @@
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "critters": "^0.0.25",
     "date-fns": "4.1.0",
     "dotenv": "^16.5.0",
     "framer-motion": "^12.7.4",
