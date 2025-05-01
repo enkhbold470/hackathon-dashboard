@@ -102,7 +102,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
 
   // These functions should be passed via props in a real implementation
   const onConfirmSpot = () => window.dispatchEvent(new CustomEvent('confirmAttendance'))
-  const onDeclineSpot = () => window.dispatchEvent(new CustomEvent('declineAttendance'))
+  // const onDeclineSpot = () => window.dispatchEvent(new CustomEvent('declineAttendance'))
 
   return (
     <motion.div 
@@ -277,7 +277,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                     >
                       Confirm My Spot
                     </button>
-                    <button
+                    {/* <button
                       onClick={onDeclineSpot}
                       className="flex-1 py-2 px-4 rounded-md font-medium text-center"
                       style={{
@@ -290,7 +290,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                       }}
                     >
                       Decline My Spot
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </motion.div>
