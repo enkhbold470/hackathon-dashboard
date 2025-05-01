@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
-import QRCode from 'qrcode';
+
 // Helper function to convert snake_case to camelCase
 function toCamelCase(data: Record<string, any>): Record<string, any> {
   const result: Record<string, any> = {};
@@ -144,23 +144,7 @@ export async function GET(
           application: application || null
         });
       }
-      case 'generate-qr-code': {
-        const application = await prisma.application.findUnique({
-          where: { userId }
-        });
-        if (!application) {
-          return NextResponse.json({ 
-            success: false, 
-            error: 'Application not found' 
-          }, { status: 404 });
-        }
-        const qrCodeUrl = await QRCode.toDataURL(application?.cwid || '');
-        console.log('QR Code URL:', qrCodeUrl);
-        return NextResponse.json({ 
-          success: true, 
-          qrCodeUrl: qrCodeUrl 
-        });
-      }
+      
       
       default:
         console.log(`Invalid GET action: ${action}`);
