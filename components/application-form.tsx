@@ -393,12 +393,14 @@ const FormFieldComponent = memo(({
                         ? uiConfig.typography.fontSize.mobile.answerOption
                         : uiConfig.typography.fontSize.answerOption,
                     }} className="text-sm font-medium">
-                      {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
+                      {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} 
                       {fieldName === "agreeToTerms" && (
                         <span className="text-blue-500 cursor-pointer">
                           <Link href="https://github.com/da-hacks/legal/blob/4eb1f4413cdfa7fce2f5914db4786d89b2113176/media-waiver.md" target="_blank">Terms and Conditions</Link>
                         </span>
                       )}
+                      {renderSavingIndicator(dbFieldName)}
+                      
                     </FormLabel>
                   </div>
                   <FormMessage style={{
