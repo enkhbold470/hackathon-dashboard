@@ -12,6 +12,7 @@ import {
 import ApplicationForm from "./application-form";
 import ApplicationStatus from "./application-status";
 import colors from "@/lib/colors";
+import uiConfig from "@/lib/ui-config";
 import useWindowSize from "@/hooks/useWindowSize";
 import Confetti from "react-confetti";
 import { toast } from "sonner";
@@ -45,11 +46,28 @@ export default function ApplicationDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [submissionData, setSubmissionData] = useState<Record<string, any>>({});
+  const [isMobile, setIsMobile] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasUnsavedChanges = useRef(false);
+
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < parseInt(uiConfig.breakpoints.md.replace('px', '')));
+    };
+    
+    // Initial check
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Clear auto-save timer on component unmount
   useEffect(() => {
@@ -245,7 +263,13 @@ export default function ApplicationDashboard() {
   };
 
   return (
-    <div className="w-full max-w-5xl py-8 px-4">
+    <div 
+      className="w-full max-w-5xl py-8 px-4"
+      style={{
+        fontFamily: uiConfig.typography.fontFamily.base,
+        padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+      }}
+    >
       {isExploding && (
         <Confetti
           width={width || 300}
@@ -256,24 +280,59 @@ export default function ApplicationDashboard() {
         />
       )}
 
-      <h1 className="text-4xl font-bold mb-6 text-center">
+      <h1 
+        className="text-4xl font-bold mb-6 text-center"
+        style={{
+          fontSize: isMobile ? uiConfig.typography.fontSize.mobile.formTitle : uiConfig.typography.fontSize.formTitle,
+          fontWeight: uiConfig.typography.fontWeight.bold,
+          marginBottom: isMobile ? '1.5rem' : '2rem',
+          color: colors.theme.primary
+        }}
+      >
         Hackathon Application
       </h1>
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent style={{
+          borderRadius: uiConfig.borderRadius.md,
+          backgroundColor: colors.theme.background,
+          border: `1px solid ${colors.theme.inputBorder}`,
+          padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+        }}>
           <AlertDialogHeader>
-            <AlertDialogTitle>Submit Application?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle style={{
+              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+              fontWeight: uiConfig.typography.fontWeight.bold,
+              color: colors.theme.primary
+            }}>
+              Submit Application?
+            </AlertDialogTitle>
+            <AlertDialogDescription style={{
+              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
+              color: colors.theme.secondary
+            }}>
               Are you sure you want to submit your application? You won't be
               able to make changes after submission.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className={isMobile ? 'flex-col space-y-2' : ''}>
+            <AlertDialogCancel 
+              style={{
+                fontSize: uiConfig.typography.fontSize.buttonText,
+                borderRadius: uiConfig.borderRadius.md
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleFormSubmit(submissionData)}
               className="bg-theme-primary text-white hover:bg-theme-primary/90"
+              style={{
+                backgroundColor: colors.theme.primary,
+                color: colors.theme.buttonText,
+                fontSize: uiConfig.typography.fontSize.buttonText,
+                borderRadius: uiConfig.borderRadius.md
+              }}
             >
               Submit
             </AlertDialogAction>
@@ -282,7 +341,12 @@ export default function ApplicationDashboard() {
       </AlertDialog>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
+        <TabsList 
+          className={`grid w-full grid-cols-2 mb-8`}
+          style={{
+            marginBottom: isMobile ? '1.5rem' : '2rem'
+          }}
+        >
           <TabsTrigger
             value="application"
             disabled={
@@ -300,6 +364,10 @@ export default function ApplicationDashboard() {
                   ? colors.theme.buttonText
                   : colors.theme.foreground,
               borderColor: colors.theme.inputBorder,
+              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText,
+              fontWeight: uiConfig.typography.fontWeight.medium,
+              padding: isMobile ? uiConfig.spacing.mobile.buttonPadding : uiConfig.spacing.buttonPadding,
+              borderRadius: uiConfig.borderRadius.md
             }}
           >
             Application Form
@@ -320,6 +388,10 @@ export default function ApplicationDashboard() {
                   ? colors.theme.buttonText
                   : colors.theme.foreground,
               borderColor: colors.theme.inputBorder,
+              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText,
+              fontWeight: uiConfig.typography.fontWeight.medium,
+              padding: isMobile ? uiConfig.spacing.mobile.buttonPadding : uiConfig.spacing.buttonPadding,
+              borderRadius: uiConfig.borderRadius.md
             }}
           >
             Application Status
@@ -330,13 +402,29 @@ export default function ApplicationDashboard() {
           style={{
             backgroundColor: colors.theme.background,
             borderColor: colors.theme.inputBorder,
+            borderRadius: uiConfig.borderRadius.lg,
+            boxShadow: uiConfig.shadows.md
           }}
           className="border-2 shadow-xl"
         >
           <TabsContent value="application" className="mt-0">
-            <CardHeader>
-              <CardTitle className="text-2xl">Hackathon Application</CardTitle>
-              <CardDescription style={{ color: colors.palette.foreground }}>
+            <CardHeader style={{
+              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+            }}>
+              <CardTitle 
+                className="text-2xl"
+                style={{
+                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+                  fontWeight: uiConfig.typography.fontWeight.bold,
+                  color: colors.theme.primary
+                }}
+              >
+                Hackathon Application
+              </CardTitle>
+              <CardDescription style={{ 
+                color: colors.palette.foreground,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
+              }}>
                 Fill out the form below to apply for the hackathon.
                 {isSaving && <span className="ml-2">(Saving...)</span>}
                 {lastSaved && !isSaving && (
@@ -350,7 +438,9 @@ export default function ApplicationDashboard() {
                 )}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent style={{
+              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+            }}>
               <ApplicationForm
                 formData={formData}
                 onChange={handleFormChange}
@@ -370,13 +460,29 @@ export default function ApplicationDashboard() {
           </TabsContent>
 
           <TabsContent value="status" className="mt-0">
-            <CardHeader>
-              <CardTitle className="text-2xl">Application Status</CardTitle>
-              <CardDescription style={{ color: colors.palette.foreground }}>
+            <CardHeader style={{
+              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+            }}>
+              <CardTitle 
+                className="text-2xl"
+                style={{
+                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+                  fontWeight: uiConfig.typography.fontWeight.bold,
+                  color: colors.theme.primary
+                }}
+              >
+                Application Status
+              </CardTitle>
+              <CardDescription style={{ 
+                color: colors.palette.foreground,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
+              }}>
                 Check the status of your hackathon application.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent style={{
+              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+            }}>
               <ApplicationStatus status={applicationStatus} />
             </CardContent>
           </TabsContent>
