@@ -1,205 +1,76 @@
-# Hackathon Application Dashboard
+# Hackathon Dashboard
 
-A modern, feature-rich application management system for hackathon organizers and participants. This system handles the entire application lifecycle from initial draft to final acceptance and confirmation.
+A streamlined application for managing hackathon applications and participants.
 
 ## Features
 
-- **Real-time Form Saving**: Applications are automatically saved as users type
-- **Status Tracking**: View application status (not started, in progress, submitted, accepted, rejected, confirmed)
-- **Detailed Logging**: Comprehensive debug logs for easy troubleshooting
-- **User Authentication**: Secure user authentication via Clerk
-- **Responsive Design**: Works on all device sizes and types
+- User authentication with Clerk
+- Application submission and management
+- Dynamic form configuration
+- Real-time auto-saving of form fields
+- Application status tracking
 
-## Setup Instructions
-
-### Prerequisites
-
-- Node.js (v16+)
-- PostgreSQL database
-- Clerk.dev account for authentication
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/enkhbold470/hackathon-dashboard.git
-   cd hackathon-dashboard
-   ```
-
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-
-3. Set up environment variables in `.env.local`:
-   ```
-   # Database connection
-   DATABASE_URL=postgres://username:password@localhost:5432/hackathon_db
-   
-   # Clerk Auth
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-   CLERK_SECRET_KEY=your_clerk_secret_key
-   ```
-
-4. Run database migrations:
-   ```bash
-   pnpm db:migrate
-   ```
-
-5. Start the development server:
-   ```bash
-   pnpm dev
-   ```
-
-## Debugging
-
-This application has built-in comprehensive debug logging to help troubleshoot issues:
-
-### Log Format
-
-All logs follow a consistent format with context prefixes:
-- `[Middleware]` - Request tracking and auth checks
-- `[API GET/POST]` - API endpoint operations
-- `[ApplicationDashboard]` - Main dashboard component
-- `[ApplicationForm]` - Form component operations
-
-### Common Debug Scenarios
-
-#### Authentication Issues
-
-Authentication-related logs:
-```
-[Middleware] Request: GET /api/db/get-application
-[Middleware] Authenticated user: user_2x...
-[API GET] Authorized user: user_2x...
-```
-
-#### Application Creation/Saving
-
-Look for these logs when troubleshooting application saving:
-```
-[ApplicationDashboard] Form data changed: {"legalName":"John Doe"}
-[ApplicationDashboard] Saving application draft to database
-[API POST] Saving application for user user_2x...
-[API POST] Application saved successfully for user user_2x, id: 123
-```
-
-#### Submission Issues
-
-When applications aren't submitting properly:
-```
-[ApplicationDashboard] Starting application submission process
-[API POST] Submitting application for user user_2x...
-[API POST] Application submitted successfully for user user_2x, id: 123
-```
-
-## Development Information
-
-### Key Components
-
-- `application-dashboard.tsx`: Main dashboard with tabs for application and status
-- `application-form.tsx`: Form handling with validation and autosave
-- `application-status.tsx`: Status display with animations and progress tracking
-- `app/db/[action]/route.ts`: API routes for database operations
-- `middleware.ts`: Authentication and request logging
-
-### Database Schema
-
-The application uses a PostgreSQL database with a primary `applications` table:
-
-| Column                | Type           | Description                      |
-|-----------------------|----------------|----------------------------------|
-| id                    | SERIAL         | Primary key                      |
-| user_id               | TEXT           | Clerk Auth user ID (unique)      |
-| legal_name            | VARCHAR(255)   | Applicant's name                 |
-| email                 | VARCHAR(255)   | Email address                    |
-| university            | VARCHAR(255)   | University/school                |
-| ... other fields ...  |                |                                  |
-| status                | VARCHAR(50)    | Application status               |
-| created_at            | TIMESTAMPTZ    | Creation timestamp               |
-| updated_at            | TIMESTAMPTZ    | Last update timestamp            |
-etc
-
-## License
-
-MIT 
-
-# Hackathon Dashboard
-
-A dashboard for hackathon application management.
-
-## Database Setup
-
-This application uses PostgreSQL for storing application data.
-
-### 1. Install PostgreSQL
-
-If you don't have PostgreSQL installed:
-
-- **macOS**: `brew install postgresql@15` and `brew services start postgresql@15`
-- **Linux**: `sudo apt install postgresql`
-- **Windows**: Download from [postgresql.org](https://www.postgresql.org/download/windows/)
-
-### 2. Create a Database
-
-```bash
-# Connect to PostgreSQL
-psql postgres
-
-# Create a database
-CREATE DATABASE hackathon_db;
-
-# Create a user (replace 'username' and 'password')
-CREATE USER username WITH ENCRYPTED PASSWORD 'password';
-
-# Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE hackathon_db TO username;
-
-# Connect to the new database
-\c hackathon_db
-
-# Grant schema privileges to the user
-GRANT ALL ON SCHEMA public TO username;
-```
-
-### 3. Configure Environment Variables
-
-Create a `.env.local` file in the project root:
+## Project Structure
 
 ```
-# Database connection
-DATABASE_URL=postgresql://username:password@localhost:5432/hackathon_db
-
-# Clerk authentication keys
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
-CLERK_SECRET_KEY=your_secret_key
+├── app/                  # Next.js application routes
+│   ├── api/              # API routes (consolidated)
+│   │   └── db/           # Database-related API endpoints
+├── components/           # React components
+│   ├── ui/               # UI components (using shadcn/ui)
+│   └── application*.tsx  # Application-specific components  
+├── lib/                  # Shared libraries and utilities
+│   ├── applicationData.ts # Form field configuration
+│   ├── prisma.ts         # Prisma client configuration
+├── prisma/               # Database schema
+├── public/               # Static assets
 ```
 
-### 4. Initialize the Database
+## API Structure
 
-Run the initialization script to create the necessary tables:
+The API has been consolidated into a single route file with action-based routing:
 
-```bash
-pnpm node scripts/init-db.js
-```
+- GET `/api/db?action=get-application&userId=123` - Retrieves an application
+- GET `/api/db?action=test-connection` - Tests database connectivity
+- POST `/api/db` with body `{ action: 'save-application', userId: '123', ...formData }` - Saves application data
+- POST `/api/db` with body `{ action: 'submit-application', userId: '123' }` - Submits an application
+
+## Form Structure
+
+The application form has been optimized for:
+
+1. Better performance
+2. Simplified maintenance
+3. Easier field editing
+4. Real-time saving with visual feedback
+
+The form is dynamically generated from the configuration in `lib/applicationData.ts`, making it easy to:
+
+- Add/remove form fields
+- Change validation rules
+- Reorganize form sections
+- Modify field labels and descriptions
 
 ## Development
 
-Install dependencies:
-
 ```bash
+# Install dependencies
 pnpm install
-```
 
-Run the development server:
+# Setup database
+pnpm prisma:generate
+pnpm prisma:push
 
-```bash
+# Start development server
 pnpm dev
 ```
 
-## Production Build
+## Optimizations
 
-```bash
-pnpm build
-pnpm start
-``` 
+The following optimizations have been implemented:
+
+1. **Consolidated API Routes**: Simplified API structure with action-based routing
+2. **Dynamic Form Rendering**: Generated from configuration for easier maintenance
+3. **Real-time Field Saving**: Immediate feedback with visual indicators
+4. **Reduced Initial Load Time**: Streamlined code and optimized form rendering
+5. **Improved Type Safety**: Better TypeScript typing throughout the application  

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -31,7 +31,7 @@ type Status =
   | "in_progress"
   | "submitted"
   | "accepted"
-  | "rejected"
+  | "waitlisted"
   | "confirmed";
 
 export default function ApplicationDashboard() {
@@ -48,130 +48,71 @@ export default function ApplicationDashboard() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasUnsavedChanges = useRef(false);
 
-  console.log("[ApplicationDashboard] Component initialized");
+  // Clear auto-save timer on component unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearInterval(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchApplication = async () => {
-      console.log("[ApplicationDashboard] Fetching application data");
       try {
-        const response = await fetch("/api/db/get-application");
-        if (!response.ok) {
-          console.error(
-            "[ApplicationDashboard] API error status:",
-            response.status
-          );
-          throw new Error("Failed to fetch application data");
-        }
-        const data = await response.json();
-        console.log(
-          "[ApplicationDashboard] Application data received:",
-          JSON.stringify(data)
-        );
+        // Use the new API endpoint
+        const response = await fetch('/api/db/get', {
+          method: 'GET',
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.application) {
+          setFormData(result.application);
+          setApplicationStatus(result.application.status as Status || "not_started");
 
-        if (data.application) {
-          console.log(
-            "[ApplicationDashboard] Application found with status:",
-            data.application.status
-          );
-          setFormData(data.application);
-          setApplicationStatus(data.application.status || "not_started");
-
-          // Set default tab to 'status' if application is submitted/accepted/rejected/confirmed
           if (
-            ["submitted", "accepted", "rejected", "confirmed"].includes(
-              data.application.status
+            ["submitted", "accepted", "waitlisted", "confirmed"].includes(
+              result.application.status
             )
           ) {
             setActiveTab("status");
-            console.log(
-              "[ApplicationDashboard] Setting default tab to status based on application status"
-            );
           }
 
-          if (data.application.status === "accepted") {
+          if (result.application.status === "accepted") {
             setIsExploding(true);
-            console.log(
-              "[ApplicationDashboard] Triggering confetti animation for accepted status"
-            );
           }
         } else {
-          console.log(
-            "[ApplicationDashboard] No application found, setting status to not_started"
-          );
           setApplicationStatus("not_started");
         }
       } catch (error) {
-        console.error(
-          "[ApplicationDashboard] Error fetching application:",
-          error
-        );
         toast.error("Could not load your application data.");
         setApplicationStatus("not_started");
       } finally {
         setIsLoading(false);
-        console.log(
-          "[ApplicationDashboard] Application fetch completed, loading state cleared"
-        );
       }
     };
 
-    // Fetch immediately
     fetchApplication();
   }, []);
 
   const handleFormChange = async (newData: Record<string, any>) => {
-    console.log(
-      "[ApplicationDashboard] Form data changed:",
-      JSON.stringify(newData)
-    );
     const updatedFormData = { ...formData, ...newData };
     setFormData(updatedFormData);
+    hasUnsavedChanges.current = true;
 
     if (applicationStatus === "not_started") {
-      console.log(
-        "[ApplicationDashboard] First form change detected, updating status to in_progress"
-      );
       setApplicationStatus("in_progress");
     }
-
-    setIsSaving(true);
-
-    try {
-      console.log(
-        "[ApplicationDashboard] Saving application draft to database"
-      );
-      // Fields should already be using DB column naming conventions from the form
-      const response = await fetch("/api/db/save-application", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...updatedFormData,
-          status: applicationStatus,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          "[ApplicationDashboard] Save application error:",
-          errorData
-        );
-        throw new Error(errorData.error || "Failed to save application draft");
-      }
-
-      console.log("[ApplicationDashboard] Form data saved successfully");
-      setLastSaved(new Date());
-    } catch (error: any) {
-      console.error("[ApplicationDashboard] Error saving form data:", error);
-      toast.error(`Failed to save changes: ${error.message}`);
-    } finally {
-      setIsSaving(false);
-    }
+    
+    // Don't save automatically when changes are made - only on submission
   };
 
   const prepareSubmission = () => {
-    // Check for required fields before allowing submission
+    console.log('prepareSubmission called', formData);
     const requiredFields = ["cwid", "full_name"];
     const missingFields = requiredFields.filter((field) => !formData[field]);
 
@@ -180,266 +121,254 @@ export default function ApplicationDashboard() {
         field === "cwid" ? "CWID" : field === "full_name" ? "Full Name" : field
       );
 
+      console.log('Missing required fields:', missingFieldLabels);
       toast.error(
         `Please fill in all required fields: ${missingFieldLabels.join(", ")}`
       );
       return;
     }
 
-    // Check if user agreed to terms
     if (!formData.agree_to_terms) {
+      console.log('Terms not agreed to');
       toast.error(
         "You must agree to the terms and conditions to submit your application."
       );
       return;
     }
 
-    // Prepare submission data using snake_case field names for DB
     const data = {
       ...formData,
       agree_to_terms: formData.agree_to_terms ?? false,
       status: "submitted",
     };
 
-    console.log(
-      "[ApplicationDashboard] Preparing submission data:",
-      JSON.stringify(data)
-    );
+    console.log('Setting submission data:', data);
     setSubmissionData(data);
     setShowConfirmDialog(true);
   };
 
-  const handleFormSubmit = async () => {
+  const handleFormSubmit = async (data?: Record<string, any>) => {
     if (isSubmitting) {
-      console.log(
-        "[ApplicationDashboard] Submission already in progress, ignoring duplicate submit"
-      );
+      console.log('Already submitting, skipping duplicate submission');
       return;
     }
 
-    console.log(
-      "[ApplicationDashboard] Starting application submission process"
-    );
+    console.log('handleFormSubmit called with data:', data || submissionData);
     setIsSubmitting(true);
     setShowConfirmDialog(false);
 
+    const submissionPayload = data || submissionData;
+
     try {
-      console.log("[ApplicationDashboard] Sending submission to API");
-      const response = await fetch("/api/db/submit-application", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submissionData),
+      console.log('Sending API request to /api/db/submit');
+      // Use the new API endpoint for submission
+      const response = await fetch('/api/db/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionPayload),
       });
-
+      
+      console.log('API response received, status:', response.status);
       const result = await response.json();
+      console.log('API result:', result);
 
-      if (!response.ok) {
-        console.error("[ApplicationDashboard] Submission API error:", result);
-        if (result.error && typeof result.error === "string") {
-          throw new Error(result.error);
-        } else if (result.message && typeof result.message === "string") {
-          throw new Error(result.message);
-        } else {
-          throw new Error(
-            "Failed to submit application. Please check all required fields."
-          );
-        }
+      if (result.success) {
+        setFormData(result.application);
+        setApplicationStatus("submitted");
+        setActiveTab("status");
+        toast.success("Application submitted successfully!");
+      } else {
+        throw new Error(result.error || "Failed to submit application");
       }
-
-      console.log(
-        "[ApplicationDashboard] Application submitted successfully:",
-        JSON.stringify(result.application)
-      );
-      setFormData(result.application);
-      setApplicationStatus("submitted");
-      setActiveTab("status");
-      toast.success("Application submitted successfully!");
     } catch (error: any) {
-      console.error(
-        "[ApplicationDashboard] Error submitting application:",
-        error
-      );
+      console.error('Submission error:', error);
       toast.error(`Submission failed: ${error.message}`);
-      // Reset submission state so user can try again
       setSubmissionData({});
     } finally {
       setIsSubmitting(false);
-      console.log("[ApplicationDashboard] Submission process completed");
+    }
+  };
+
+  const handleConfirmAttendance = async () => {
+    try {
+      // Use the new API endpoint
+      const response = await fetch('/api/db/confirm-attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setApplicationStatus("confirmed");
+        toast.success("Attendance confirmed!");
+      } else {
+        throw new Error(result.error || "Failed to confirm attendance");
+      }
+    } catch (error: any) {
+      toast.error(`Failed to confirm attendance: ${error.message}`);
+    }
+  };
+  
+  const handleDeclineAttendance = async () => {
+    try {
+      // Use the new API endpoint
+      const response = await fetch('/api/db/decline-attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setApplicationStatus("waitlisted");
+        toast.success("Attendance declined. We hope to see you at another event!");
+      } else {
+        throw new Error(result.error || "Failed to decline attendance");
+      }
+    } catch (error: any) {
+      toast.error(`Failed to decline attendance: ${error.message}`);
     }
   };
 
   return (
-    <div className="container max-w-5xl py-10 flex justify-center items-center w-full">
-      <div className="relative w-full">
-        {isExploding && (
-          <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
-            <Confetti width={width} height={height} />
-          </div>
-        )}
+    <div className="w-full max-w-5xl py-8 px-4">
+      {isExploding && (
+        <Confetti
+          width={width || 300}
+          height={height || 300}
+          recycle={false}
+          numberOfPieces={500}
+          onConfettiComplete={() => setIsExploding(false)}
+        />
+      )}
 
-        <AlertDialog
-          open={showConfirmDialog}
-          onOpenChange={setShowConfirmDialog}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Submit Application</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to submit your application? You won't be
-                able to edit it after submission.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleFormSubmit}
-                disabled={isSubmitting}
-                style={{
-                  backgroundColor: colors.theme.primary,
-                  color: colors.theme.buttonText,
-                }}
-              >
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      <h1 className="text-4xl font-bold mb-6 text-center">
+        Hackathon Application
+      </h1>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Submit Application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to submit your application? You won't be
+              able to make changes after submission.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleFormSubmit(submissionData)}
+              className="bg-theme-primary text-white hover:bg-theme-primary/90"
+            >
+              Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsTrigger
+            value="application"
+            disabled={
+              ["submitted", "accepted", "waitlisted", "confirmed"].includes(
+                applicationStatus
+              ) && !isLoading
+            }
+            style={{
+              backgroundColor:
+                activeTab === "application"
+                  ? colors.theme.primary
+                  : colors.theme.background,
+              color:
+                activeTab === "application"
+                  ? colors.theme.buttonText
+                  : colors.theme.foreground,
+              borderColor: colors.theme.inputBorder,
+            }}
+          >
+            Application Form
+          </TabsTrigger>
+          <TabsTrigger
+            value="status"
+            disabled={
+              applicationStatus === "not_started" &&
+              !isLoading
+            }
+            style={{
+              backgroundColor:
+                activeTab === "status"
+                  ? colors.theme.primary
+                  : colors.theme.background,
+              color:
+                activeTab === "status"
+                  ? colors.theme.buttonText
+                  : colors.theme.foreground,
+              borderColor: colors.theme.inputBorder,
+            }}
+          >
+            Application Status
+          </TabsTrigger>
+        </TabsList>
 
         <Card
-          className="overflow-hidden relative shadow-lg"
           style={{
-            backgroundColor: colors.theme.cardBackground,
-            borderColor: colors.theme.cardBorder,
+            backgroundColor: colors.theme.background,
+            borderColor: colors.theme.inputBorder,
           }}
+          className="border-2 shadow-xl"
         >
-          <CardHeader
-            className="border-b"
-            style={{ borderColor: colors.theme.cardBorder }}
-          >
-            <div className="flex items-center">
-              <div
-                className="mr-3 h-10 w-10 rounded-full flex items-center justify-center"
-                style={{
-                  background: `linear-gradient(to bottom right, ${colors.palette.gold}, ${colors.palette.text})`,
-                }}
-              >
-                <span
-                  className="font-bold text-xl"
-                  style={{ color: colors.theme.background }}
-                >
-                  DA
-                </span>
-              </div>
-              <div>
-                <CardTitle
-                  className="text-2xl font-bold tracking-wider"
-                  style={{
-                    background: `linear-gradient(to right, ${colors.palette.love}, ${colors.palette.gold})`,
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  DAHacks 3.5
-                </CardTitle>
-                <CardDescription style={{ color: colors.palette.love }}>
-                  Apply & track your application status
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList
-                className="grid w-full grid-cols-2 rounded-none h-12 border-b"
-                style={{
-                  backgroundColor: colors.theme.cardBackground,
-                  borderColor: colors.theme.cardBorder,
-                }}
-              >
-                <TabsTrigger
-                  value="application"
-                  className="rounded-none h-12 data-[state=active]:border-t-2"
-                  style={{
-                    color: colors.theme.foreground,
-                    borderColor: colors.theme.primary,
-                    backgroundColor:
-                      activeTab === "application"
-                        ? colors.theme.background
-                        : "transparent",
-                  }}
-                >
-                  Application
-                </TabsTrigger>
-                <TabsTrigger
-                  value="status"
-                  className="rounded-none h-12 data-[state=active]:border-t-2"
-                  style={{
-                    color: colors.theme.foreground,
-                    borderColor: colors.theme.primary,
-                    backgroundColor:
-                      activeTab === "status"
-                        ? colors.theme.background
-                        : "transparent",
-                  }}
-                >
-                  Status
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="application" className="p-6">
-                {isLoading ? (
-                  <div className="flex justify-center items-center p-10">
-                    <div
-                      className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent"
-                      style={{
-                        borderColor: `${colors.theme.primary} transparent transparent transparent`,
-                      }}
-                    ></div>
+          <TabsContent value="application" className="mt-0">
+            <CardHeader>
+              <CardTitle className="text-2xl">Hackathon Application</CardTitle>
+              <CardDescription style={{ color: colors.palette.foreground }}>
+                Fill out the form below to apply for the hackathon.
+                {isSaving && <span className="ml-2">(Saving...)</span>}
+                {lastSaved && !isSaving && (
+                  <div className="mt-2 text-xs">
+                    Last saved:{" "}
+                    {new Date(lastSaved).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
                   </div>
-                ) : (
-                  <div>
-                    <ApplicationForm
-                      onChange={handleFormChange}
-                      onSubmit={prepareSubmission}
-                      formData={formData}
-                      isSubmitted={
-                        applicationStatus !== "not_started" &&
-                        applicationStatus !== "in_progress"
-                      }
-                      isLoading={isSubmitting || isLoading}
-                    />
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ApplicationForm
+                formData={formData}
+                onChange={handleFormChange}
+                onSubmit={prepareSubmission}
+                isSubmitted={["submitted", "accepted", "waitlisted", "confirmed"].includes(applicationStatus)}
+                isLoading={isLoading || isSubmitting}
+              />
+            </CardContent>
+          </TabsContent>
 
-                    <div className="mt-4 text-sm text-right text-muted-foreground">
-                      {isSaving ? (
-                        <span>Saving...</span>
-                      ) : lastSaved ? (
-                        <span>Saved at {lastSaved.toLocaleTimeString()}</span>
-                      ) : null}
-                    </div>
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="status" className="p-6">
-                {isLoading ? (
-                  <div className="flex justify-center items-center p-10">
-                    <div
-                      className="animate-spin rounded-full h-10 w-10 border-2 border-t-transparent"
-                      style={{
-                        borderColor: `${colors.theme.primary} transparent transparent transparent`,
-                      }}
-                    ></div>
-                  </div>
-                ) : (
-                  <ApplicationStatus status={applicationStatus} />
-                )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
+          <TabsContent value="status" className="mt-0">
+            <CardHeader>
+              <CardTitle className="text-2xl">Application Status</CardTitle>
+              <CardDescription style={{ color: colors.palette.foreground }}>
+                Check the status of your hackathon application.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ApplicationStatus status={applicationStatus} />
+            </CardContent>
+          </TabsContent>
         </Card>
-      </div>
+      </Tabs>
     </div>
   );
 }
