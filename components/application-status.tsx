@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle, Clock, XCircle, AlertCircle, PartyPopper, Terminal, Code } from "lucide-react"
 import { motion } from "framer-motion"
 import colors from "@/lib/colors"
+import uiConfig from "@/lib/ui-config"
 import { applicationStatus } from "@/lib/applicationData"
 type ApplicationStatus = "not_started" | "in_progress" | "submitted" | "accepted" | "waitlisted" | "confirmed"
 
@@ -32,6 +33,23 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
   const [animate, setAnimate] = useState(false)
   const [typedText, setTypedText] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < parseInt(uiConfig.breakpoints.md.replace('px', '')))
+    }
+    
+    // Initial check
+    checkMobile()
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile)
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Animation effect when status changes
   useEffect(() => {
@@ -88,12 +106,20 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       transition={{ duration: 0.5 }}
+      style={{
+        fontFamily: uiConfig.typography.fontFamily.base
+      }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+      <div className={`flex ${isMobile ? 'flex-col' : 'items-center justify-between'} mb-4`}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} ${isMobile ? 'gap-2' : 'gap-3'} ${isMobile ? 'mb-3' : ''}`}>
           <h3 
             className="text-xl font-medium" 
-            style={{ color: colors.theme.foreground }}
+            style={{ 
+              color: colors.theme.foreground,
+              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+              fontWeight: uiConfig.typography.fontWeight.medium,
+              marginBottom: isMobile ? '0.5rem' : 0
+            }}
           >
             Application Status:
           </h3>
@@ -120,6 +146,9 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                 color: statusDetails.textColor,
                 borderColor: statusDetails.borderColor,
                 borderWidth: "1px",
+                fontSize: isMobile ? '0.75rem' : '0.875rem',
+                padding: isMobile ? '0.375rem 0.75rem' : '0.375rem 1rem',
+                borderRadius: uiConfig.borderRadius.md
               }}
             >
               {statusDetails.title}
@@ -139,11 +168,16 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
             backgroundColor: colors.theme.background,
             borderColor: statusDetails.borderColor,
             borderWidth: "1px",
+            borderRadius: uiConfig.borderRadius.lg,
+            boxShadow: uiConfig.shadows.md,
           }}
         >
           <CardHeader
             className="flex flex-row items-center gap-5 border-b pb-5"
-            style={{ borderColor: colors.theme.background }}
+            style={{ 
+              borderColor: colors.theme.background,
+              padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding 
+            }}
           >
             <motion.div
               animate={animate ? { rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] } : {}}
@@ -153,20 +187,34 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
             </motion.div>
             
             <div className="space-y-1">
-              <CardTitle style={{ color: statusDetails.textColor }}>
+              <CardTitle style={{ 
+                color: statusDetails.textColor,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+                fontWeight: uiConfig.typography.fontWeight.bold
+              }}>
                 {statusDetails.title}
               </CardTitle>
               
-              <CardDescription style={{ color: colors.theme.secondary }}>
+              <CardDescription style={{ 
+                color: colors.theme.secondary,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText,
+                lineHeight: uiConfig.typography.lineHeight.relaxed
+              }}>
                 {statusDetails.description}
               </CardDescription>
             </div>
           </CardHeader>
           
-          <CardContent className="pt-6">
+          <CardContent className="pt-6" style={{ 
+            padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding 
+          }}>
             <p 
               className="text-base leading-relaxed" 
-              style={{ color: colors.theme.foreground }}
+              style={{ 
+                color: colors.theme.foreground,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
+                lineHeight: uiConfig.typography.lineHeight.relaxed
+              }}
             >
               {statusDetails.message}
             </p>
@@ -180,12 +228,18 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                 style={{
                   backgroundColor: `${colors.theme.secondary}15`,
                   borderColor: colors.theme.secondary,
+                  padding: isMobile ? uiConfig.spacing.mobile.sectionPadding : uiConfig.spacing.sectionPadding,
+                  borderRadius: uiConfig.borderRadius.md,
                 }}
               >
                 <div className="relative z-10">
                   <h4 
                     className="font-semibold mb-4 flex items-center text-lg" 
-                    style={{ color: colors.theme.primary }}
+                    style={{ 
+                      color: colors.theme.primary,
+                      fontSize: isMobile ? uiConfig.typography.fontSize.mobile.questionTitle : uiConfig.typography.fontSize.questionTitle,
+                      fontWeight: uiConfig.typography.fontWeight.semibold
+                    }}
                   >
                     <span className="mr-3">
                       <PartyPopper className="h-6 w-6" />
@@ -195,7 +249,10 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                   
                   <div 
                     className="font-mono text-base mb-4" 
-                    style={{ color: colors.theme.primary }}
+                    style={{ 
+                      color: colors.theme.primary,
+                      fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
+                    }}
                   >
                     {typedText}
                     {isTyping && <span className="animate-pulse">|</span>}
@@ -208,6 +265,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                     transition={{ duration: 1.5, delay: 0.5 }}
                     style={{
                       background: `linear-gradient(to right, ${colors.theme.primary}, ${colors.theme.secondary})`,
+                      borderRadius: uiConfig.borderRadius.full,
                     }}
                   />
                 </div>
@@ -223,24 +281,30 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                 style={{
                   backgroundColor: `${colors.theme.success}15`,
                   borderColor: colors.theme.success,
+                  padding: isMobile ? uiConfig.spacing.mobile.sectionPadding : uiConfig.spacing.sectionPadding,
+                  borderRadius: uiConfig.borderRadius.md,
                 }}
               >
                 <div className="relative z-10">
                   <h4 
                     className="font-semibold mb-4 text-center text-lg" 
-                    style={{ color: colors.theme.success }}
+                    style={{ 
+                      color: colors.theme.success,
+                      fontSize: isMobile ? uiConfig.typography.fontSize.mobile.questionTitle : uiConfig.typography.fontSize.questionTitle,
+                      fontWeight: uiConfig.typography.fontWeight.semibold
+                    }}
                   >
                     Your QR Code
                   </h4>
                   
                   <div
-                    className="w-56 h-56 flex items-center justify-center p-3 mx-auto"
+                    className={`${isMobile ? 'w-48 h-48' : 'w-56 h-56'} flex items-center justify-center p-3 mx-auto`}
                     style={{
                       backgroundColor: colors.theme.background,
                       borderColor: colors.theme.success,
                       borderWidth: "1px",
                       boxShadow: `0 0 12px ${colors.theme.primary}`,
-
+                      borderRadius: uiConfig.borderRadius.sm,
                     }}
                   >
                     <div
@@ -249,7 +313,10 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                     >
                       <p 
                         className="text-sm text-center" 
-                        style={{ color: colors.theme.foreground }}
+                        style={{ 
+                          color: colors.theme.foreground,
+                          fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText,
+                        }}
                       >
                         QR code will appear here
                       </p>
@@ -258,7 +325,10 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
                   
                   <p 
                     className="mt-4 text-sm text-center" 
-                    style={{ color: colors.theme.foreground }}
+                    style={{ 
+                      color: colors.theme.foreground,
+                      fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText,
+                    }}
                   >
                     Present this QR code when you arrive at the event
                   </p>
@@ -278,19 +348,30 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
           style={{
             backgroundColor: colors.theme.background,
             borderColor: colors.theme.background,
+            padding: isMobile ? uiConfig.spacing.mobile.sectionPadding : uiConfig.spacing.sectionPadding,
+            borderRadius: uiConfig.borderRadius.lg,
+            boxShadow: uiConfig.shadows.sm,
           }}
         >
           <div className="relative z-10">
             <h4 
               className="font-medium mb-4 text-lg" 
-              style={{ color: colors.theme.primary }}
+              style={{ 
+                color: colors.theme.primary,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+                fontWeight: uiConfig.typography.fontWeight.medium,
+              }}
             >
               What happens next?
             </h4>
             
             <ol 
               className="list-decimal list-inside space-y-4 text-base leading-relaxed" 
-              style={{ color: colors.theme.foreground }}
+              style={{ 
+                color: colors.theme.foreground,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
+                lineHeight: uiConfig.typography.lineHeight.relaxed,
+              }}
             >
               {applicationStatus.hackathonInfo.nextSteps.map((step: string, index: number) => (
                 <motion.li
@@ -315,13 +396,20 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
         style={{
           backgroundColor: colors.theme.background,
           borderColor: colors.theme.background,
+          padding: isMobile ? uiConfig.spacing.mobile.sectionPadding : uiConfig.spacing.sectionPadding,
+          borderRadius: uiConfig.borderRadius.lg,
+          boxShadow: uiConfig.shadows.sm,
         }}
       >
         {/* //Info about the hackathon */}
         <div className="relative z-10">
           <h4 
             className="font-medium mb-4 text-lg" 
-            style={{ color: colors.theme.primary }}
+            style={{ 
+              color: colors.theme.primary,
+              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+              fontWeight: uiConfig.typography.fontWeight.medium,
+            }}
           >
             About DAHacks 3.5
           </h4>
@@ -337,14 +425,22 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
               >
                 <h5 
                   className="font-medium" 
-                  style={{ color: colors.theme.foreground }}
+                  style={{ 
+                    color: colors.theme.foreground,
+                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.questionTitle : uiConfig.typography.fontSize.questionTitle,
+                    fontWeight: uiConfig.typography.fontWeight.medium,
+                  }}
                 >
                   {section.title}
                 </h5>
                 
                 <p 
                   className="leading-relaxed" 
-                  style={{ color: colors.theme.foreground }}
+                  style={{ 
+                    color: colors.theme.foreground,
+                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
+                    lineHeight: uiConfig.typography.lineHeight.relaxed,
+                  }}
                 >
                   {section.title === "Questions?" ? (
                     <>

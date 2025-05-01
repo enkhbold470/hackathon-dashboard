@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, memo } from "react"
+import { useState, useMemo, memo, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -14,7 +14,9 @@ import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Check } from "lucide-react"
+import Link from "next/link"
 import colors from "@/lib/colors"
+import uiConfig from "@/lib/ui-config"
 import { applicationData, toDbColumn } from "@/lib/applicationData"
 import React from "react"
 
@@ -111,7 +113,8 @@ const FormFieldComponent = memo(({
   isSubmitting,
   handleFieldChange,
   renderSavingIndicator,
-  styles
+  styles,
+  isMobile
 }: {
   fieldName: string,
   fieldConfig: any,
@@ -120,7 +123,8 @@ const FormFieldComponent = memo(({
   isSubmitting?: boolean,
   handleFieldChange: (name: string, value: any) => void,
   renderSavingIndicator: (name: string) => React.ReactNode,
-  styles: any
+  styles: any,
+  isMobile: boolean
 }) => {
   const dbFieldName = toDbColumn(fieldName);
   
@@ -137,15 +141,42 @@ const FormFieldComponent = memo(({
             case "text":
             case "email":
               return (
-                <FormItem>
-                  <FormLabel style={styles.label}>
+                <FormItem className="mb-4">
+                  <FormLabel style={{
+                    ...styles.label,
+                    fontSize: isMobile 
+                      ? uiConfig.typography.fontSize.mobile.questionTitle
+                      : uiConfig.typography.fontSize.questionTitle,
+                    fontWeight: uiConfig.typography.fontWeight.semibold,
+                    marginBottom: uiConfig.spacing.inputGap
+                  }}>
                    {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder={fieldConfig.placeholder}
-                      style={styles.input}
+                      style={{
+                        ...styles.input,
+                        width: isMobile ? '100%' : uiConfig.inputSizes.shortAnswer.width,
+                        maxWidth: uiConfig.inputSizes.shortAnswer.maxWidth,
+                        height: uiConfig.inputSizes.shortAnswer.height,
+                        padding: isMobile 
+                          ? uiConfig.spacing.mobile.inputPadding 
+                          : uiConfig.spacing.inputPadding,
+                        fontSize: isMobile 
+                          ? uiConfig.typography.fontSize.mobile.answerOption
+                          : uiConfig.typography.fontSize.answerOption,
+                        borderWidth: uiConfig.inputStyles.borderWidth,
+                        borderBottomWidth: '1px',
+                        borderBottomColor: colors.theme.inputBorder,
+                        borderBottomStyle: 'solid',
+                        borderRadius: uiConfig.inputStyles.borderRadius,
+                        backgroundColor: uiConfig.inputStyles.backgroundColor,
+                        boxShadow: 'none',
+                        transition: uiConfig.transitions.default
+                      }}
+                      className="focus:border-b-2 focus:border-primary hover:border-b-2 hover:border-primary focus:outline-none focus:shadow-none"
                       value={fieldValue || ""}
                       onChange={(e) => {
                         field.onChange(e)
@@ -155,21 +186,53 @@ const FormFieldComponent = memo(({
                       disabled={isSubmitted || isSubmitting}
                     />
                   </FormControl>
-                  <FormMessage style={styles.errorMessage} />
+                  <FormMessage style={{
+                    ...styles.errorMessage,
+                    fontSize: uiConfig.typography.fontSize.helperText,
+                    marginTop: '4px'
+                  }} />
                 </FormItem>
               )
               
             case "textarea":
               return (
-                <FormItem>
-                  <FormLabel style={styles.label}>
+                <FormItem className="mb-4">
+                  <FormLabel style={{
+                    ...styles.label,
+                    fontSize: isMobile 
+                      ? uiConfig.typography.fontSize.mobile.questionTitle
+                      : uiConfig.typography.fontSize.questionTitle,
+                    fontWeight: uiConfig.typography.fontWeight.semibold,
+                    marginBottom: uiConfig.spacing.inputGap
+                  }}>
                   {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
                       placeholder={fieldConfig.placeholder}
-                      style={styles.input}
+                      style={{
+                        ...styles.input,
+                        width: isMobile ? '100%' : uiConfig.inputSizes.paragraph.width,
+                        maxWidth: uiConfig.inputSizes.paragraph.maxWidth,
+                        minHeight: uiConfig.inputSizes.paragraph.minHeight,
+                        padding: isMobile 
+                          ? uiConfig.spacing.mobile.inputPadding 
+                          : uiConfig.spacing.inputPadding,
+                        fontSize: isMobile 
+                          ? uiConfig.typography.fontSize.mobile.answerOption
+                          : uiConfig.typography.fontSize.answerOption,
+                        lineHeight: uiConfig.typography.lineHeight.relaxed,
+                        borderWidth: uiConfig.inputStyles.borderWidth,
+                        borderBottomWidth: '1px',
+                        borderBottomColor: colors.theme.inputBorder,
+                        borderBottomStyle: 'solid',
+                        borderRadius: uiConfig.inputStyles.borderRadius,
+                        backgroundColor: uiConfig.inputStyles.backgroundColor,
+                        boxShadow: 'none',
+                        transition: uiConfig.transitions.default
+                      }}
+                      className="focus:border-b-2 focus:border-primary hover:border-b-2 hover:border-primary focus:outline-none focus:shadow-none"
                       value={fieldValue || ""}
                       onChange={(e) => {
                         field.onChange(e)
@@ -178,14 +241,25 @@ const FormFieldComponent = memo(({
                       disabled={isSubmitted || isSubmitting}
                     />
                   </FormControl>
-                  <FormMessage style={styles.errorMessage} />
+                  <FormMessage style={{
+                    ...styles.errorMessage,
+                    fontSize: uiConfig.typography.fontSize.helperText,
+                    marginTop: '4px'
+                  }} />
                 </FormItem>
               )
               
             case "select":
               return (
-                <FormItem>
-                  <FormLabel style={styles.label}>
+                <FormItem className="mb-4">
+                  <FormLabel style={{
+                    ...styles.label,
+                    fontSize: isMobile 
+                      ? uiConfig.typography.fontSize.mobile.questionTitle
+                      : uiConfig.typography.fontSize.questionTitle,
+                    fontWeight: uiConfig.typography.fontWeight.semibold,
+                    marginBottom: uiConfig.spacing.inputGap
+                  }}>
                     {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                   <Select
@@ -197,7 +271,29 @@ const FormFieldComponent = memo(({
                     disabled={isSubmitted || isSubmitting}
                   >
                     <FormControl>
-                      <SelectTrigger style={styles.input}>
+                      <SelectTrigger 
+                        style={{
+                          ...styles.input,
+                          width: isMobile ? '100%' : uiConfig.inputSizes.dropdown.width,
+                          maxWidth: uiConfig.inputSizes.dropdown.maxWidth,
+                          height: uiConfig.inputSizes.dropdown.height,
+                          padding: isMobile 
+                            ? uiConfig.spacing.mobile.inputPadding 
+                            : uiConfig.spacing.inputPadding,
+                          fontSize: isMobile 
+                            ? uiConfig.typography.fontSize.mobile.answerOption
+                            : uiConfig.typography.fontSize.answerOption,
+                          borderWidth: uiConfig.inputStyles.borderWidth,
+                          borderBottomWidth: '1px',
+                          borderBottomColor: colors.theme.inputBorder,
+                          borderBottomStyle: 'solid',
+                          borderRadius: uiConfig.inputStyles.borderRadius,
+                          backgroundColor: uiConfig.inputStyles.backgroundColor,
+                          boxShadow: 'none',
+                          transition: uiConfig.transitions.default
+                        }}
+                        className="focus:border-b-2 focus:border-primary hover:border-b-2 hover:border-primary focus:outline-none focus:shadow-none"
+                      >
                         <SelectValue placeholder={fieldConfig.placeholder} />
                       </SelectTrigger>
                     </FormControl>
@@ -209,14 +305,25 @@ const FormFieldComponent = memo(({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage style={styles.errorMessage} />
+                  <FormMessage style={{
+                    ...styles.errorMessage,
+                    fontSize: uiConfig.typography.fontSize.helperText,
+                    marginTop: '4px'
+                  }} />
                 </FormItem>
               )
               
             case "radio":
               return (
-                <FormItem>
-                  <FormLabel style={styles.label}>
+                <FormItem className="mb-4">
+                  <FormLabel style={{
+                    ...styles.label,
+                    fontSize: isMobile 
+                      ? uiConfig.typography.fontSize.mobile.questionTitle
+                      : uiConfig.typography.fontSize.questionTitle,
+                    fontWeight: uiConfig.typography.fontWeight.semibold,
+                    marginBottom: uiConfig.spacing.inputGap
+                  }}>
                     {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                   <FormControl>
@@ -231,21 +338,42 @@ const FormFieldComponent = memo(({
                     >
                       {fieldConfig.options?.map((option: FieldOption) => (
                         <div key={option.value} className="flex items-center space-x-2">
-                          <RadioGroupItem value={option.value} id={`${fieldName}-${option.value}`} />
-                          <Label htmlFor={`${fieldName}-${option.value}`}>{option.label}</Label>
+                          <RadioGroupItem 
+                            value={option.value} 
+                            id={`${fieldName}-${option.value}`}
+                            style={{
+                              width: uiConfig.inputSizes.radio.size,
+                              height: uiConfig.inputSizes.radio.size
+                            }}
+                          />
+                          <Label 
+                            htmlFor={`${fieldName}-${option.value}`}
+                            style={{
+                              fontSize: isMobile 
+                                ? uiConfig.typography.fontSize.mobile.answerOption
+                                : uiConfig.typography.fontSize.answerOption,
+                            }}
+                          >
+                            {option.label}
+                          </Label>
                         </div>
                       ))}
                     </RadioGroup>
                   </FormControl>
-                  <FormMessage style={styles.errorMessage} />
+                  <FormMessage style={{
+                    ...styles.errorMessage,
+                    fontSize: uiConfig.typography.fontSize.helperText,
+                    marginTop: '4px'
+                  }} />
                 </FormItem>
               )
               
             case "checkbox":
               return (
-                <FormItem>
+                <FormItem className="mb-4">
                   <div className="flex items-center space-x-2">
                     <FormControl>
+                      {/* increase size of the checkbox */}
                       <Checkbox
                         checked={fieldValue === true}
                         onCheckedChange={(checked) => {
@@ -253,25 +381,45 @@ const FormFieldComponent = memo(({
                           handleFieldChange(dbFieldName, checked)
                         }}
                         disabled={isSubmitted || isSubmitting}
+                        style={{
+                          width: uiConfig.inputSizes.checkbox.size,
+                          height: uiConfig.inputSizes.checkbox.size
+                        }}
                       />
                     </FormControl>
-                    <FormLabel style={styles.label} className="text-sm font-medium">
+                    <FormLabel style={{
+                      ...styles.label,
+                      fontSize: isMobile 
+                        ? uiConfig.typography.fontSize.mobile.answerOption
+                        : uiConfig.typography.fontSize.answerOption,
+                    }} className="text-sm font-medium">
                       {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                       {fieldName === "agreeToTerms" && (
                         <span className="text-blue-500 cursor-pointer">
-                          Terms and Conditions
+                          <Link href="https://github.com/da-hacks/legal/blob/4eb1f4413cdfa7fce2f5914db4786d89b2113176/media-waiver.md" target="_blank">Terms and Conditions</Link>
                         </span>
                       )}
                     </FormLabel>
                   </div>
-                  <FormMessage style={styles.errorMessage} />
+                  <FormMessage style={{
+                    ...styles.errorMessage,
+                    fontSize: uiConfig.typography.fontSize.helperText,
+                    marginTop: '4px',
+                    marginLeft: `calc(${uiConfig.inputSizes.checkbox.size} + ${uiConfig.inputSizes.checkbox.spacing})`
+                  }} />
                 </FormItem>
               )
               
             default:
               return (
-                <FormItem>
-                  <FormLabel style={styles.label}>
+                <FormItem className="mb-4">
+                  <FormLabel style={{
+                    ...styles.label,
+                    fontSize: isMobile 
+                      ? uiConfig.typography.fontSize.mobile.questionTitle
+                      : uiConfig.typography.fontSize.questionTitle,
+                    fontWeight: uiConfig.typography.fontWeight.semibold,
+                  }}>
                     {fieldConfig.validationRules.required ? <span style={{ color: 'red' }}>*</span> : ""} {fieldConfig.label} {renderSavingIndicator(dbFieldName)}
                   </FormLabel>
                 </FormItem>
@@ -295,6 +443,23 @@ function ApplicationForm({
   const { toast } = useToast()
   const [savingFields, setSavingFields] = useState<Record<string, boolean>>({})
   const [savedFields, setSavedFields] = useState<Record<string, boolean>>({})
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < parseInt(uiConfig.breakpoints.md.replace('px', '')))
+    }
+    
+    // Initial check
+    checkMobile()
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile)
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
   // Memoized styles to prevent recalculation - properly inside component
   const styles = useMemo(() => ({
@@ -302,24 +467,47 @@ function ApplicationForm({
       backgroundColor: colors.theme.inputBackground,
       borderColor: colors.theme.inputBorder,
       color: colors.theme.inputText,
+      transition: uiConfig.transitions.default,
     },
     label: { 
       color: colors.theme.foreground,
+      fontFamily: uiConfig.typography.fontFamily.base,
+      transition: uiConfig.transitions.default,
     },
     sectionTitle: {
       color: colors.theme.primary,
+      fontFamily: uiConfig.typography.fontFamily.base,
+      fontSize: isMobile 
+        ? uiConfig.typography.fontSize.mobile.sectionTitle
+        : uiConfig.typography.fontSize.sectionTitle,
+      fontWeight: uiConfig.typography.fontWeight.bold,
+      transition: uiConfig.transitions.default,
     },
     sectionDescription: {
       color: colors.theme.foreground,
+      fontFamily: uiConfig.typography.fontFamily.base,
+      fontSize: isMobile 
+        ? uiConfig.typography.fontSize.mobile.helperText
+        : uiConfig.typography.fontSize.helperText,
+      lineHeight: uiConfig.typography.lineHeight.relaxed,
+      transition: uiConfig.transitions.default,
     },
     errorMessage: {
       color: colors.theme.danger,
+      transition: uiConfig.transitions.default,
     },
     button: {
       backgroundColor: colors.theme.primary,
       color: colors.theme.buttonText,
+      fontWeight: uiConfig.typography.fontWeight.medium,
+      fontSize: uiConfig.typography.fontSize.buttonText,
+      padding: isMobile 
+        ? uiConfig.spacing.mobile.buttonPadding
+        : uiConfig.spacing.buttonPadding,
+      borderRadius: uiConfig.borderRadius.md,
+      transition: uiConfig.transitions.default,
     }
-  }), []);
+  }), [isMobile]);
   
   // Saving indicator component
   const renderSavingIndicator = (fieldName: string) => {
@@ -375,18 +563,47 @@ function ApplicationForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form 
+        onSubmit={form.handleSubmit(handleSubmit)} 
+        className="space-y-8"
+        style={{
+          fontFamily: uiConfig.typography.fontFamily.base
+        }}
+      >
         {/* Render sections and fields */}
         {Object.entries(applicationData).map(([sectionKey, section]) => (
-          <div key={sectionKey} className="bg-white/5 p-6 rounded-lg mb-8">
-            <h2 className="text-2xl font-bold mb-2" style={styles.sectionTitle}>
+          <div 
+            key={sectionKey} 
+            className="bg-white/5 rounded-lg mb-8"
+            style={{
+              padding: isMobile 
+                ? uiConfig.spacing.mobile.sectionPadding 
+                : uiConfig.spacing.sectionPadding,
+              boxShadow: uiConfig.shadows.sm,
+              borderRadius: uiConfig.borderRadius.lg,
+            }}
+          >
+            <h2 
+              className="text-2xl font-bold mb-2" 
+              style={styles.sectionTitle}
+            >
               {section.title}
             </h2>
-            <p className="mb-6" style={styles.sectionDescription}>
+            <p 
+              className="mb-6" 
+              style={styles.sectionDescription}
+            >
               {section.description}
             </p>
             
-            <div className="space-y-6">
+            <div 
+              className="space-y-6"
+              style={{
+                gap: isMobile 
+                  ? uiConfig.spacing.mobile.questionGap
+                  : uiConfig.spacing.questionGap
+              }}
+            >
               {section.fields && Object.entries(section.fields).map(([fieldName, fieldConfig]) => (
                 <FormFieldComponent
                   key={fieldName}
@@ -398,6 +615,7 @@ function ApplicationForm({
                   handleFieldChange={handleFieldChange}
                   renderSavingIndicator={renderSavingIndicator}
                   styles={styles}
+                  isMobile={isMobile}
                 />
               ))}
             </div>
@@ -405,18 +623,40 @@ function ApplicationForm({
         ))}
         
         {/* Submit button */}
-        <div className="sticky bottom-0 bg-background p-4 border-t border-border z-10">
+        <div 
+          className="sticky bottom-0 bg-background p-4 border-t border-border z-10"
+          style={{
+            padding: isMobile 
+              ? uiConfig.spacing.mobile.containerPadding
+              : uiConfig.spacing.containerPadding,
+            boxShadow: uiConfig.shadows.md
+          }}
+        >
           <Button 
             type="submit"
             disabled={isSubmitted || isSubmitting || !form.formState.isValid} 
-            className="w-full"
-            style={styles.button}
+            className={isMobile ? 'w-full' : ''}
+            style={{
+              ...styles.button,
+              width: isMobile 
+                ? uiConfig.inputSizes.submitButton.mobile.width
+                : uiConfig.inputSizes.submitButton.width,
+              height: isMobile 
+                ? uiConfig.inputSizes.submitButton.mobile.height
+                : uiConfig.inputSizes.submitButton.height
+            }}
           >
             {isSubmitting ? "Processing..." : isSubmitted ? "Submitted" : "Submit Application"}
           </Button>
           
           {!form.formState.isValid && (
-            <p className="text-sm text-red-500 mt-2">
+            <p 
+              className="text-sm text-red-500 mt-2"
+              style={{
+                fontSize: uiConfig.typography.fontSize.helperText,
+                color: colors.theme.danger
+              }}
+            >
               Please fill in all required fields correctly before submitting.
             </p>
           )}
