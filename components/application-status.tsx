@@ -377,7 +377,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
         }}
       >
         {/* //Info about the hackathon */}
-        <div className="relative z-10">
+        {/* <div className="relative z-10">
           <h4 
             className="font-medium mb-4 text-lg" 
             style={{ 
@@ -437,7 +437,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
               </motion.div>
             ))}
           </div>
-        </div>
+        </div> */}
       </motion.div>
     </motion.div>
   )
