@@ -55,8 +55,8 @@ const buildFormSchema = () => {
     })
   }
 
-  Object.values(applicationData).forEach(section => {
-    if (section.fields) {
+  Object.entries(applicationData).forEach(([sectionKey, section]) => {
+    if (sectionKey !== 'disclaimer' && 'fields' in section) {
       processFields(section.fields)
     }
   })
@@ -87,9 +87,9 @@ interface FieldOption {
 const getDefaultValues = () => {
   let defaults: Record<string, any> = {}
   
-  Object.values(applicationData).forEach(section => {
-    if (section.fields) {
-      Object.entries(section.fields).forEach(([fieldName, fieldConfig]) => {
+  Object.entries(applicationData).forEach(([sectionKey, section]) => {
+    if (sectionKey !== 'disclaimer' && 'fields' in section) {
+      Object.entries(section.fields).forEach(([fieldName, fieldConfig]: [string, any]) => {
         const dbFieldName = toDbColumn(fieldName);
         
         if (fieldConfig.type === "checkbox") {
@@ -572,10 +572,9 @@ function ApplicationForm({
           fontFamily: uiConfig.typography.fontFamily.base
         }}
       >
-        {/* Render sections and fields */}
-        {Object.entries(applicationData).map(([sectionKey, section]) => (
+        {/* Render disclaimer section first */}
+        {applicationData.disclaimer && (
           <div 
-            key={sectionKey} 
             className="bg-white/5 rounded-lg mb-8"
             style={{
               padding: isMobile 
@@ -589,40 +588,76 @@ function ApplicationForm({
               className="text-2xl font-bold mb-2" 
               style={styles.sectionTitle}
             >
-              {section.title}
+              {applicationData.disclaimer.title}
             </h2>
             <p 
               className="mb-6" 
               style={styles.sectionDescription}
             >
-              {section.description}
+              {applicationData.disclaimer.content}
             </p>
-            
+          </div>
+        )}
+
+        {/* Render sections and fields */}
+        {Object.entries(applicationData).map(([sectionKey, section]) => {
+          // Skip disclaimer section as it's rendered separately
+          if (sectionKey === 'disclaimer') return null;
+          
+          // Only render sections with fields
+          if (!('fields' in section)) return null;
+          
+          return (
             <div 
-              className="space-y-6"
+              key={sectionKey} 
+              className="bg-white/5 rounded-lg mb-8"
               style={{
-                gap: isMobile 
-                  ? uiConfig.spacing.mobile.questionGap
-                  : uiConfig.spacing.questionGap
+                padding: isMobile 
+                  ? uiConfig.spacing.mobile.sectionPadding 
+                  : uiConfig.spacing.sectionPadding,
+                boxShadow: uiConfig.shadows.sm,
+                borderRadius: uiConfig.borderRadius.lg,
               }}
             >
-              {section.fields && Object.entries(section.fields).map(([fieldName, fieldConfig]) => (
-                <FormFieldComponent
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldConfig={fieldConfig}
-                  control={form.control}
-                  isSubmitted={isSubmitted}
-                  isSubmitting={isSubmitting}
-                  handleFieldChange={handleFieldChange}
-                  renderSavingIndicator={renderSavingIndicator}
-                  styles={styles}
-                  isMobile={isMobile}
-                />
-              ))}
+              <h2 
+                className="text-2xl font-bold mb-2" 
+                style={styles.sectionTitle}
+              >
+                {section.title}
+              </h2>
+              <p 
+                className="mb-6" 
+                style={styles.sectionDescription}
+              >
+                {section.description}
+              </p>
+              
+              <div 
+                className="space-y-6"
+                style={{
+                  gap: isMobile 
+                    ? uiConfig.spacing.mobile.questionGap
+                    : uiConfig.spacing.questionGap
+                }}
+              >
+                {Object.entries(section.fields).map(([fieldName, fieldConfig]) => (
+                  <FormFieldComponent
+                    key={fieldName}
+                    fieldName={fieldName}
+                    fieldConfig={fieldConfig}
+                    control={form.control}
+                    isSubmitted={isSubmitted}
+                    isSubmitting={isSubmitting}
+                    handleFieldChange={handleFieldChange}
+                    renderSavingIndicator={renderSavingIndicator}
+                    styles={styles}
+                    isMobile={isMobile}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         
         {/* Submit button */}
         <div 
