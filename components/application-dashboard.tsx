@@ -27,6 +27,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
+import { applicationData, applicationStatusData } from "@/lib/applicationData";
+
 type Status =
   | "not_started"
   | "in_progress"
@@ -545,7 +547,7 @@ export default function ApplicationDashboard() {
                 }}
               >
                 <CardTitle
-                  className="text-2xl"
+                  className="text-2xl mb-6"
                   style={{
                     fontSize: isMobile
                       ? uiConfig.typography.fontSize.mobile.sectionTitle
@@ -554,49 +556,74 @@ export default function ApplicationDashboard() {
                     color: colors.theme.primary,
                   }}
                 >
-                  Application Status Tab
+                  Application Status
                 </CardTitle>
-                <CardDescription
-                  style={{
-                    color: colors.palette.foreground,
-                    fontSize: isMobile
-                      ? uiConfig.typography.fontSize.mobile.helperText
-                      : uiConfig.typography.fontSize.helperText,
-                  }}
-                >
-                  Those are previous hackathon project showcases.
-                  <ul className="flex flex-col space-y-2 mt-2 text-blue-500 underline italic list-disc">
-                    <li>
+                
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4" style={{ color: colors.theme.primary }}>
+                      Previous Hackathon Projects
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {applicationStatusData.devpost.links.map((link) => (
+                        <Link 
+                          key={link.url} 
+                          href={link.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
+                            <h4 className="font-medium text-theme-primary hover:underline">
+                              {link.title}
+                            </h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                              View project showcase →
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4" style={{ color: colors.theme.primary }}>
+                      Stay Connected
+                    </h3>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Link 
+                        href={applicationStatusData.discord.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex-1"
+                      >
+                        <div className="bg-[#5865F2] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
+
+                          <div>
+                            <div className="font-medium">Join Discord</div>
+                            <div className="text-sm opacity-90">Chat with organizers & participants</div>
+                          </div>
+                        </div>
+                      </Link>
                       
-                      <Link
-                        href="https://de-anza-hacks-2023.devpost.com/project-gallery"
-                        target="_blank"
+                      <Link 
+                        href={applicationStatusData.instagram.url} 
+                        target="_blank" 
                         rel="noopener noreferrer"
+                        className="flex-1"
                       >
-                        DAHACKS V2.0 Devpost
+                        <div className="bg-gradient-to-r from-[#405DE6] via-[#E1306C] to-[#FFDC80] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
+
+                          <div>
+                            <div className="font-medium">Follow Instagram</div>
+                            <div className="text-sm opacity-90">Get latest updates & announcements</div>
+                          </div>
+                        </div>
                       </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="https://dahacks25.devpost.com/project-gallery"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        DAHACKS V2.5 Devpost
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="https://dahacks3.devpost.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        DAHACKS V3.0 Devpost
-                      </Link>
-                    </li>
-                  </ul>
-                </CardDescription>
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
+
               <CardContent
                 style={{
                   padding: isMobile
