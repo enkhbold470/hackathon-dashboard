@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
+import Link from "next/link";
 type Status =
   | "not_started"
   | "in_progress"
@@ -56,17 +56,19 @@ export default function ApplicationDashboard() {
   // Check for mobile viewport
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < parseInt(uiConfig.breakpoints.md.replace('px', '')));
+      setIsMobile(
+        window.innerWidth < parseInt(uiConfig.breakpoints.md.replace("px", ""))
+      );
     };
-    
+
     // Initial check
     checkMobile();
-    
+
     // Add resize listener
-    window.addEventListener('resize', checkMobile);
-    
+    window.addEventListener("resize", checkMobile);
+
     // Cleanup
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Clear auto-save timer on component unmount
@@ -82,15 +84,17 @@ export default function ApplicationDashboard() {
     const fetchApplication = async () => {
       try {
         // Use the new API endpoint
-        const response = await fetch('/api/db/get', {
-          method: 'GET',
+        const response = await fetch("/api/db/get", {
+          method: "GET",
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success && result.application) {
           setFormData(result.application);
-          setApplicationStatus(result.application.status as Status || "not_started");
+          setApplicationStatus(
+            (result.application.status as Status) || "not_started"
+          );
 
           if (
             ["submitted", "accepted", "waitlisted", "confirmed"].includes(
@@ -129,17 +133,17 @@ export default function ApplicationDashboard() {
     const handleConfirm = () => {
       handleConfirmAttendance();
     };
-    
+
     const handleDecline = () => {
       handleDeclineAttendance();
     };
 
-    window.addEventListener('confirmAttendance', handleConfirm);
-    window.addEventListener('declineAttendance', handleDecline);
-    
+    window.addEventListener("confirmAttendance", handleConfirm);
+    window.addEventListener("declineAttendance", handleDecline);
+
     return () => {
-      window.removeEventListener('confirmAttendance', handleConfirm);
-      window.removeEventListener('declineAttendance', handleDecline);
+      window.removeEventListener("confirmAttendance", handleConfirm);
+      window.removeEventListener("declineAttendance", handleDecline);
     };
   }, []);
 
@@ -151,12 +155,12 @@ export default function ApplicationDashboard() {
     if (applicationStatus === "not_started") {
       setApplicationStatus("in_progress");
     }
-    
+
     // Don't save automatically when changes are made - only on submission
   };
 
   const prepareSubmission = () => {
-    console.log('prepareSubmission called', { status: formData.status });
+    console.log("prepareSubmission called", { status: formData.status });
     const requiredFields = ["cwid", "full_name"];
     const missingFields = requiredFields.filter((field) => !formData[field]);
 
@@ -165,7 +169,7 @@ export default function ApplicationDashboard() {
         field === "cwid" ? "CWID" : field === "full_name" ? "Full Name" : field
       );
 
-      console.log('Missing required fields:', missingFieldLabels);
+      console.log("Missing required fields:", missingFieldLabels);
       toast.error(
         `Please fill in all required fields: ${missingFieldLabels.join(", ")}`
       );
@@ -173,7 +177,7 @@ export default function ApplicationDashboard() {
     }
 
     if (!formData.agree_to_terms) {
-      console.log('Terms not agreed to');
+      console.log("Terms not agreed to");
       toast.error(
         "You must agree to the terms and conditions to submit your application."
       );
@@ -186,20 +190,20 @@ export default function ApplicationDashboard() {
       status: "submitted",
     };
 
-    console.log('Setting submission data:', data);
+    console.log("Setting submission data:", data);
     setSubmissionData(data);
     setShowConfirmDialog(true);
   };
 
   const handleFormSubmit = async (data?: Record<string, any>) => {
     if (isSubmitting) {
-      console.log('Already submitting, skipping duplicate submission');
+      console.log("Already submitting, skipping duplicate submission");
       return;
     }
 
-    console.log('handleFormSubmit called with data:', data || submissionData);
+    console.log("handleFormSubmit called with data:", data || submissionData);
     setIsSubmitting(true);
-    
+
     // Only close the dialog if it was shown
     if (showConfirmDialog) {
       setShowConfirmDialog(false);
@@ -209,19 +213,19 @@ export default function ApplicationDashboard() {
     const submissionPayload = data || submissionData;
 
     try {
-      console.log('Sending API request to /api/db/submit');
+      console.log("Sending API request to /api/db/submit");
       // Use the new API endpoint for submission
-      const response = await fetch('/api/db/submit', {
-        method: 'POST',
+      const response = await fetch("/api/db/submit", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(submissionPayload),
       });
-      
-      console.log('API response received, status:', response.status);
+
+      console.log("API response received, status:", response.status);
       const result = await response.json();
-      console.log('API result:', result);
+      console.log("API result:", result);
 
       if (result.success) {
         setFormData(result.application);
@@ -232,7 +236,7 @@ export default function ApplicationDashboard() {
         throw new Error(result.error || "Failed to submit application");
       }
     } catch (error: any) {
-      console.error('Submission error:', error);
+      console.error("Submission error:", error);
       toast.error(`Submission failed: ${error.message}`);
       setSubmissionData({});
     } finally {
@@ -243,16 +247,16 @@ export default function ApplicationDashboard() {
   const handleConfirmAttendance = async () => {
     try {
       // Use the new API endpoint
-      const response = await fetch('/api/db/confirm-attendance', {
-        method: 'POST',
+      const response = await fetch("/api/db/confirm-attendance", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setApplicationStatus("confirmed");
         toast.success("Attendance confirmed!");
@@ -263,23 +267,25 @@ export default function ApplicationDashboard() {
       toast.error(`Failed to confirm attendance: ${error.message}`);
     }
   };
-  
+
   const handleDeclineAttendance = async () => {
     try {
       // Use the new API endpoint
-      const response = await fetch('/api/db/decline-attendance', {
-        method: 'POST',
+      const response = await fetch("/api/db/decline-attendance", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setApplicationStatus("waitlisted");
-        toast.success("Attendance declined. We hope to see you at another event!");
+        toast.success(
+          "Attendance declined. We hope to see you at another event!"
+        );
       } else {
         throw new Error(result.error || "Failed to decline attendance");
       }
@@ -289,19 +295,23 @@ export default function ApplicationDashboard() {
   };
 
   return (
-    <div 
+    <div
       className="flex justify-center items-start w-full py-8"
       style={{
         fontFamily: uiConfig.typography.fontFamily.base,
-        padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
+        padding: isMobile
+          ? uiConfig.spacing.mobile.containerPadding
+          : uiConfig.spacing.containerPadding,
       }}
     >
       <div
         style={{
-          width: '100%',
+          width: "100%",
           maxWidth: uiConfig.layout.maxWidth,
           margin: uiConfig.layout.contentMargin,
-          padding: isMobile ? uiConfig.layout.mobilePadding : uiConfig.layout.contentPadding
+          padding: isMobile
+            ? uiConfig.layout.mobilePadding
+            : uiConfig.layout.contentPadding,
         }}
       >
         {isExploding && (
@@ -314,46 +324,63 @@ export default function ApplicationDashboard() {
           />
         )}
 
-        <h1 
+        <h1
           className="text-4xl font-bold mb-6 text-center"
           style={{
-            fontSize: isMobile ? uiConfig.typography.fontSize.mobile.formTitle : uiConfig.typography.fontSize.formTitle,
+            fontSize: isMobile
+              ? uiConfig.typography.fontSize.mobile.formTitle
+              : uiConfig.typography.fontSize.formTitle,
             fontWeight: uiConfig.typography.fontWeight.bold,
-            marginBottom: isMobile ? '1.5rem' : '2rem',
-            color: colors.theme.primary
+            marginBottom: isMobile ? "1.5rem" : "2rem",
+            color: colors.theme.primary,
           }}
         >
           Hackathon Application
         </h1>
 
-        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-          <AlertDialogContent style={{
-            borderRadius: uiConfig.borderRadius.md,
-            backgroundColor: colors.theme.background,
-            border: `1px solid ${colors.theme.inputBorder}`,
-            padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-          }}>
+        <AlertDialog
+          open={showConfirmDialog}
+          onOpenChange={setShowConfirmDialog}
+        >
+          <AlertDialogContent
+            style={{
+              borderRadius: uiConfig.borderRadius.md,
+              backgroundColor: colors.theme.background,
+              border: `1px solid ${colors.theme.inputBorder}`,
+              padding: isMobile
+                ? uiConfig.spacing.mobile.containerPadding
+                : uiConfig.spacing.containerPadding,
+            }}
+          >
             <AlertDialogHeader>
-              <AlertDialogTitle style={{
-                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-                fontWeight: uiConfig.typography.fontWeight.bold,
-                color: colors.theme.primary
-              }}>
+              <AlertDialogTitle
+                style={{
+                  fontSize: isMobile
+                    ? uiConfig.typography.fontSize.mobile.sectionTitle
+                    : uiConfig.typography.fontSize.sectionTitle,
+                  fontWeight: uiConfig.typography.fontWeight.bold,
+                  color: colors.theme.primary,
+                }}
+              >
                 Submit Application?
               </AlertDialogTitle>
-              <AlertDialogDescription style={{
-                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
-                color: colors.theme.secondary
-              }}>
+              <AlertDialogDescription
+                style={{
+                  fontSize: isMobile
+                    ? uiConfig.typography.fontSize.mobile.answerOption
+                    : uiConfig.typography.fontSize.answerOption,
+                  color: colors.theme.secondary,
+                }}
+              >
                 Are you sure you want to submit your application? You won't be
                 able to make changes after submission.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter className={isMobile ? 'flex-col space-y-2' : ''}>
-              <AlertDialogCancel 
+            <AlertDialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
+              <AlertDialogCancel
                 style={{
                   fontSize: uiConfig.typography.fontSize.buttonText,
-                  borderRadius: uiConfig.borderRadius.md
+                  borderRadius: uiConfig.borderRadius.md,
                 }}
               >
                 Cancel
@@ -365,7 +392,7 @@ export default function ApplicationDashboard() {
                   backgroundColor: colors.theme.primary,
                   color: colors.theme.buttonText,
                   fontSize: uiConfig.typography.fontSize.buttonText,
-                  borderRadius: uiConfig.borderRadius.md
+                  borderRadius: uiConfig.borderRadius.md,
                 }}
               >
                 Submit
@@ -375,10 +402,10 @@ export default function ApplicationDashboard() {
         </AlertDialog>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList 
+          <TabsList
             className={`grid w-full grid-cols-2 mb-8`}
             style={{
-              marginBottom: isMobile ? '1.5rem' : '2rem'
+              marginBottom: isMobile ? "1.5rem" : "2rem",
             }}
           >
             <TabsTrigger
@@ -398,20 +425,21 @@ export default function ApplicationDashboard() {
                     ? colors.theme.buttonText
                     : colors.theme.foreground,
                 borderColor: colors.theme.inputBorder,
-                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText,
+                fontSize: isMobile
+                  ? uiConfig.typography.fontSize.mobile.buttonText
+                  : uiConfig.typography.fontSize.buttonText,
                 fontWeight: uiConfig.typography.fontWeight.medium,
-                padding: isMobile ? uiConfig.spacing.mobile.buttonPadding : uiConfig.spacing.buttonPadding,
-                borderRadius: uiConfig.borderRadius.md
+                padding: isMobile
+                  ? uiConfig.spacing.mobile.buttonPadding
+                  : uiConfig.spacing.buttonPadding,
+                borderRadius: uiConfig.borderRadius.md,
               }}
             >
               Application Form
             </TabsTrigger>
             <TabsTrigger
               value="status"
-              disabled={
-                applicationStatus === "not_started" &&
-                !isLoading
-              }
+              disabled={applicationStatus === "not_started" && !isLoading}
               style={{
                 backgroundColor:
                   activeTab === "status"
@@ -422,10 +450,14 @@ export default function ApplicationDashboard() {
                     ? colors.theme.buttonText
                     : colors.theme.foreground,
                 borderColor: colors.theme.inputBorder,
-                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText,
+                fontSize: isMobile
+                  ? uiConfig.typography.fontSize.mobile.buttonText
+                  : uiConfig.typography.fontSize.buttonText,
                 fontWeight: uiConfig.typography.fontWeight.medium,
-                padding: isMobile ? uiConfig.spacing.mobile.buttonPadding : uiConfig.spacing.buttonPadding,
-                borderRadius: uiConfig.borderRadius.md
+                padding: isMobile
+                  ? uiConfig.spacing.mobile.buttonPadding
+                  : uiConfig.spacing.buttonPadding,
+                borderRadius: uiConfig.borderRadius.md,
               }}
             >
               Application Status
@@ -438,8 +470,8 @@ export default function ApplicationDashboard() {
               borderColor: colors.theme.inputBorder,
               borderRadius: uiConfig.inputStyles.sectionBorderRadius,
               boxShadow: uiConfig.inputStyles.sectionBoxShadow,
-              overflow: 'hidden',
-              width: '100%'
+              overflow: "hidden",
+              width: "100%",
             }}
             className="border shadow-md"
           >
@@ -474,9 +506,13 @@ export default function ApplicationDashboard() {
                   )}
                 </CardDescription>
               </CardHeader> */}
-              <CardContent style={{
-                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-              }}>
+              <CardContent
+                style={{
+                  padding: isMobile
+                    ? uiConfig.spacing.mobile.containerPadding
+                    : uiConfig.spacing.containerPadding,
+                }}
+              >
                 <ApplicationForm
                   formData={formData}
                   onChange={handleFormChange}
@@ -489,36 +525,85 @@ export default function ApplicationDashboard() {
                       prepareSubmission();
                     }
                   }}
-                  isSubmitted={["submitted", "accepted", "waitlisted", "confirmed"].includes(applicationStatus)}
+                  isSubmitted={[
+                    "submitted",
+                    "accepted",
+                    "waitlisted",
+                    "confirmed",
+                  ].includes(applicationStatus)}
                   isSubmitting={isSubmitting}
                 />
               </CardContent>
             </TabsContent>
 
             <TabsContent value="status" className="mt-0">
-              <CardHeader style={{
-                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-              }}>
-                <CardTitle 
+              <CardHeader
+                style={{
+                  padding: isMobile
+                    ? uiConfig.spacing.mobile.containerPadding
+                    : uiConfig.spacing.containerPadding,
+                }}
+              >
+                <CardTitle
                   className="text-2xl"
                   style={{
-                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
+                    fontSize: isMobile
+                      ? uiConfig.typography.fontSize.mobile.sectionTitle
+                      : uiConfig.typography.fontSize.sectionTitle,
                     fontWeight: uiConfig.typography.fontWeight.bold,
-                    color: colors.theme.primary
+                    color: colors.theme.primary,
                   }}
                 >
-                  Application Status
+                  Application Status Tab
                 </CardTitle>
-                <CardDescription style={{ 
-                  color: colors.palette.foreground,
-                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
-                }}>
-                  Check the status of your hackathon application.
+                <CardDescription
+                  style={{
+                    color: colors.palette.foreground,
+                    fontSize: isMobile
+                      ? uiConfig.typography.fontSize.mobile.helperText
+                      : uiConfig.typography.fontSize.helperText,
+                  }}
+                >
+                  Those are previous hackathon project showcases.
+                  <ul className="flex flex-col space-y-2 mt-2 text-blue-500 underline italic list-disc">
+                    <li>
+                      
+                      <Link
+                        href="https://de-anza-hacks-2023.devpost.com/project-gallery"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        DAHACKS V2.0 Devpost
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="https://dahacks25.devpost.com/project-gallery"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        DAHACKS V2.5 Devpost
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="https://dahacks3.devpost.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        DAHACKS V3.0 Devpost
+                      </Link>
+                    </li>
+                  </ul>
                 </CardDescription>
               </CardHeader>
-              <CardContent style={{
-                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-              }}>
+              <CardContent
+                style={{
+                  padding: isMobile
+                    ? uiConfig.spacing.mobile.containerPadding
+                    : uiConfig.spacing.containerPadding,
+                }}
+              >
                 <ApplicationStatus status={applicationStatus} />
               </CardContent>
             </TabsContent>
