@@ -1,4 +1,8 @@
 export const applicationData = {
+  disclaimer: {
+    title: "⚠️ Important Information",
+    content: "If you plan to participate as a team, each team member must apply individually. Teams are not mandatory - you can participate solo or join a team later. Maximum team size is 4 members. We have limited space, so please apply as soon as possible!"
+  },
   personalInfo: {
     title: "👤 Personal Information",
     description: "Tell us about yourself",
@@ -87,7 +91,7 @@ export const applicationData = {
     description: "Help us get to know you better",
     fields: {
       whyAttend: {
-        label: "🤔 Why do you want to come to DA Hacks 3.5?",
+        label: "🤔 Why do you wanna come to DAHacks?",
         type: "textarea",
         placeholder: "Tell us why you're interested in attending our hackathon...",
         validationRules: {
@@ -97,7 +101,7 @@ export const applicationData = {
         }
       },
       projectExperience: {
-        label: "📚 Tell us about a project you've enjoyed working on",
+        label: "📚 Tell us a project you've enjoyed working on (technical or non-technical)",
         type: "textarea",
         placeholder: "Share your experience with a project you've worked on...",
         validationRules: {
@@ -106,18 +110,18 @@ export const applicationData = {
           message: "Please share your project experience in at least 10 characters."
         }
       },
-      futurePlans: {
-        label: "🚀 What are your future plans for the next 10 years?",
+      whatToBuild: {
+        label: "🚀 What do you wanna build? (can be technical or non-technical)",
         type: "textarea",
-        placeholder: "Tell us about your aspirations and goals...",
+        placeholder: "Tell us about what you're planning to build at the hackathon...",
         validationRules: {
           required: true,
           minLength: 10,
-          message: "Please share your future plans in at least 10 characters."
+          message: "Please share what you want to build in at least 10 characters."
         }
       },
       funFact: {
-        label: "🎈 Share a fun fact about yourself",
+        label: "🎈 Fun fact about you?",
         type: "textarea",
         placeholder: "Something interesting about you...",
         validationRules: {
@@ -219,7 +223,7 @@ export const formToDbMapping = {
   // About you
   whyAttend: "why_attend",
   projectExperience: "project_experience",
-  futurePlans: "future_plans",
+  whatToBuild: "what_to_build",
   funFact: "fun_fact",
   selfDescription: "self_description",
   
