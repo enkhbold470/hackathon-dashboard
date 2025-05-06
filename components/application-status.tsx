@@ -8,7 +8,7 @@ import { CheckCircle, Clock, XCircle, AlertCircle, PartyPopper, Terminal, Code }
 import { motion } from "framer-motion"
 import colors from "@/lib/colors"
 import uiConfig from "@/lib/ui-config"
-import { applicationStatus } from "@/lib/applicationData"
+import { applicationStatusData } from "@/lib/applicationData"
 type ApplicationStatus = "not_started" | "in_progress" | "submitted" | "accepted" | "waitlisted" | "confirmed"
 
 interface ApplicationStatusProps {
@@ -61,7 +61,7 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
   // Typing effect for accepted status
   useEffect(() => {
     if (status === "accepted") {
-      const text = applicationStatus.statusDetails.accepted.successMessage
+      const text = applicationStatusData.statusDetails.accepted.successMessage
       setIsTyping(true)
       
       let i = 0
@@ -80,8 +80,8 @@ export default function ApplicationStatus({ status }: ApplicationStatusProps) {
   }, [status])
 
   const getStatusDetails = () => {
-    const statusDetail = applicationStatus.statusDetails[status] || 
-                        applicationStatus.statusDetails.not_started
+    const statusDetail = applicationStatusData.statusDetails[status] || 
+                        applicationStatusData.statusDetails.not_started
     
     // Get the icon component based on the icon name in the JSON
     const IconComponent = IconMap[statusDetail.icon as keyof typeof IconMap]

@@ -1,7 +1,7 @@
 export const applicationData = {
   disclaimer: {
-    title: "⚠️ Important Information",
-    content: "If you plan to participate as a team, each team member must apply individually. Teams are not mandatory - you can participate solo or join a team later. Maximum team size is 4 members. We have limited space, so please apply as soon as possible!"
+    title: "Important Information",
+    content: "Each team member must apply individually. Teams are optional—you can join later or participate solo. Max team size: 4 members. Space is limited, so apply ASAP!"
   },
   personalInfo: {
     title: "👤 Personal Information",
@@ -248,7 +248,7 @@ export const toFormField = (dbColumn: string): string => {
   return reversed[dbColumn] || dbColumn;
 };
 // important to add the statuses 
-export const applicationStatus = {
+export const applicationStatusData = {
   statusDetails: {
     not_started: {
       title: "Not Started",
@@ -317,5 +317,33 @@ export const applicationStatus = {
       "📲 After confirmation, you'll receive a QR code for check-in"
     ]
     
+  },
+  devpost: {
+    title: "Previous Hackathon Project Showcases",
+    content: "Here are some of the projects from previous hackathons that you can check out:",
+    links: [
+      {
+        title: "DAHACKS V2.0 Devpost",
+        url: "https://de-anza-hacks-2023.devpost.com/project-gallery"
+      },
+      {
+        title: "DAHACKS V2.5 Devpost",
+        url: "https://dahacks25.devpost.com/project-gallery"
+      },
+      {
+        title: "DAHACKS V3.0 Devpost",
+        url: "https://dahacks3.devpost.com"
+      }
+    ]
+  },
+  discord: {
+    title: "Join Discord",
+    content: "Join our Discord server to stay updated on the latest news and announcements.",
+    url: "https://discord.gg/bJWTS7qem6"
+  },
+  instagram: {
+    title: "Follow Instagram",
+    content: "Follow our Instagram to stay updated on the latest news and announcements.",
+    url: "https://www.instagram.com/deanzahacks"
   }
 }
