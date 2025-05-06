@@ -110,7 +110,7 @@ export const applicationData = {
           message: "Please share your project experience in at least 10 characters."
         }
       },
-      whatToBuild: {
+      futurePlans: {
         label: "🚀 What do you wanna build? (can be technical or non-technical)",
         type: "textarea",
         placeholder: "Tell us about what you're planning to build at the hackathon...",
@@ -223,7 +223,7 @@ export const formToDbMapping = {
   // About you
   whyAttend: "why_attend",
   projectExperience: "project_experience",
-  whatToBuild: "what_to_build",
+  futurePlans: "future_plans", 
   funFact: "fun_fact",
   selfDescription: "self_description",
   
