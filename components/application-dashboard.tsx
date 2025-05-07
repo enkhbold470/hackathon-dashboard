@@ -556,10 +556,25 @@ export default function ApplicationDashboard() {
                   Application Status
                 </CardTitle>
 
-                <div className="space-y-4">
+          
+              </CardHeader>
+
+              <CardContent
+                style={{
+                  padding: isMobile
+                    ? uiConfig.spacing.mobile.containerPadding
+                    : uiConfig.spacing.containerPadding,
+                }}
+              >
+                <ApplicationStatus
+                  status={applicationStatus}
+                  cwid={formData?.cwid}
+                />
+
+<div className="space-y-4">
                   <div>
                     <h3
-                      className="text-xl font-semibold mb-4"
+                      className="text-xl font-semibold my-4"
                       style={{ color: colors.theme.primary }}
                     >
                       Previous Hackathon Projects
@@ -585,19 +600,7 @@ export default function ApplicationDashboard() {
                     </div>
                   </div>
                 </div>
-              </CardHeader>
 
-              <CardContent
-                style={{
-                  padding: isMobile
-                    ? uiConfig.spacing.mobile.containerPadding
-                    : uiConfig.spacing.containerPadding,
-                }}
-              >
-                <ApplicationStatus
-                  status={applicationStatus}
-                  cwid={formData?.cwid}
-                />
 
                 <div>
                   <h3
