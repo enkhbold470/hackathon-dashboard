@@ -560,7 +560,7 @@ function ApplicationForm({
   const handleSubmit = (data: FormData) => {
     console.log('ApplicationForm handleSubmit called with data:', data);
     console.log('Form validation state:', form.formState);
-    onSubmit(data);
+    onSubmit(); // Don't pass data directly to ensure confirmation dialog is shown
   }
 
   return (

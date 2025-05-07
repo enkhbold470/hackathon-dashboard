@@ -163,8 +163,11 @@ export default function ApplicationDashboard() {
 
   const prepareSubmission = () => {
     console.log("prepareSubmission called", { status: formData.status });
+    // Get the current form data from the form state
+    const currentFormData = formData;
+    
     const requiredFields = ["cwid", "full_name"];
-    const missingFields = requiredFields.filter((field) => !formData[field]);
+    const missingFields = requiredFields.filter((field) => !currentFormData[field]);
 
     if (missingFields.length > 0) {
       const missingFieldLabels = missingFields.map((field) =>
@@ -178,7 +181,7 @@ export default function ApplicationDashboard() {
       return;
     }
 
-    if (!formData.agree_to_terms) {
+    if (!currentFormData.agree_to_terms) {
       console.log("Terms not agreed to");
       toast.error(
         "You must agree to the terms and conditions to submit your application."
@@ -187,8 +190,8 @@ export default function ApplicationDashboard() {
     }
 
     const data = {
-      ...formData,
-      agree_to_terms: formData.agree_to_terms ?? false,
+      ...currentFormData,
+      agree_to_terms: currentFormData.agree_to_terms ?? false,
       status: "submitted",
     };
 
@@ -518,15 +521,7 @@ export default function ApplicationDashboard() {
                 <ApplicationForm
                   formData={formData}
                   onChange={handleFormChange}
-                  onSubmit={(data) => {
-                    if (data) {
-                      // If data is directly provided, bypass the confirmation dialog
-                      handleFormSubmit(data);
-                    } else {
-                      // Otherwise, go through the regular flow with validation
-                      prepareSubmission();
-                    }
-                  }}
+                  onSubmit={() => prepareSubmission()}
                   isSubmitted={[
                     "submitted",
                     "accepted",
