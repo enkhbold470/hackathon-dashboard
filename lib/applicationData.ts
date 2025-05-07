@@ -332,7 +332,7 @@ export const applicationStatusData = {
       },
       {
         title: "DAHACKS V3.0 Devpost",
-        url: "https://dahacks3.devpost.com"
+        url: "https://dahacks3.devpost.com/project-gallery"
       }
     ]
   },

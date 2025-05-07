@@ -165,9 +165,11 @@ export default function ApplicationDashboard() {
     console.log("prepareSubmission called", { status: formData.status });
     // Get the current form data from the form state
     const currentFormData = formData;
-    
+
     const requiredFields = ["cwid", "full_name"];
-    const missingFields = requiredFields.filter((field) => !currentFormData[field]);
+    const missingFields = requiredFields.filter(
+      (field) => !currentFormData[field]
+    );
 
     if (missingFields.length > 0) {
       const missingFieldLabels = missingFields.map((field) =>
@@ -553,21 +555,24 @@ export default function ApplicationDashboard() {
                 >
                   Application Status
                 </CardTitle>
-                
-                <div className="space-y-8">
+
+                <div className="space-y-4">
                   <div>
-                    <h3 className="text-xl font-semibold mb-4" style={{ color: colors.theme.primary }}>
+                    <h3
+                      className="text-xl font-semibold mb-4"
+                      style={{ color: colors.theme.primary }}
+                    >
                       Previous Hackathon Projects
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {applicationStatusData.devpost.links.map((link) => (
-                        <Link 
-                          key={link.url} 
-                          href={link.url} 
-                          target="_blank" 
+                        <Link
+                          key={link.url}
+                          href={link.url}
+                          target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
+                          <div className="bg-white dark:bg-gray-800 rounded-lg p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
                             <h4 className="font-medium text-theme-primary hover:underline">
                               {link.title}
                             </h4>
@@ -577,43 +582,6 @@ export default function ApplicationDashboard() {
                           </div>
                         </Link>
                       ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4" style={{ color: colors.theme.primary }}>
-                      Stay Connected
-                    </h3>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <Link 
-                        href={applicationStatusData.discord.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex-1"
-                      >
-                        <div className="bg-[#5865F2] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
-
-                          <div>
-                            <div className="font-medium">Join Discord</div>
-                            <div className="text-sm opacity-90">Chat with organizers & participants</div>
-                          </div>
-                        </div>
-                      </Link>
-                      
-                      <Link 
-                        href={applicationStatusData.instagram.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex-1"
-                      >
-                        <div className="bg-gradient-to-r from-[#405DE6] via-[#E1306C] to-[#FFDC80] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
-
-                          <div>
-                            <div className="font-medium">Follow Instagram</div>
-                            <div className="text-sm opacity-90">Get latest updates & announcements</div>
-                          </div>
-                        </div>
-                      </Link>
                     </div>
                   </div>
                 </div>
@@ -626,7 +594,52 @@ export default function ApplicationDashboard() {
                     : uiConfig.spacing.containerPadding,
                 }}
               >
-                <ApplicationStatus status={applicationStatus} />
+                <ApplicationStatus
+                  status={applicationStatus}
+                  cwid={formData?.cwid}
+                />
+
+                <div>
+                  <h3
+                    className="text-xl font-semibold my-4"
+                    style={{ color: colors.theme.primary }}
+                  >
+                    Stay Connected
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Link
+                      href={applicationStatusData.discord.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1"
+                    >
+                      <div className="bg-[#5865F2] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
+                        <div>
+                          <div className="font-medium">Join Discord</div>
+                          <div className="text-sm opacity-90">
+                            Chat with organizers & participants
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+
+                    <Link
+                      href={applicationStatusData.instagram.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1"
+                    >
+                      <div className="bg-gradient-to-r from-[#405DE6] via-[#E1306C] to-[#FFDC80] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
+                        <div>
+                          <div className="font-medium">Follow Instagram</div>
+                          <div className="text-sm opacity-90">
+                            Get latest updates & announcements
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
               </CardContent>
             </TabsContent>
           </Card>
