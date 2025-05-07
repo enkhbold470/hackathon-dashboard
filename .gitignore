@@ -37,3 +37,5 @@ misc/**/migrations/
 databases/**/migrations/
 experimental/**/*.db
 dev.db
+
+.DS_Store

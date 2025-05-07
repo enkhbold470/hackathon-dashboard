@@ -365,12 +365,12 @@ export default function ApplicationStatus({ status, cwid }: ApplicationStatusPro
                 size={isMobile ? 180 : 250}
               />
               
-              <WalletButtons 
+              {/* <WalletButtons 
                 cwid={hackerCWID}
                 isMobile={isMobile}
                 buttonTextSize={isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText}
                 borderRadius={uiConfig.borderRadius.md}
-              />
+              /> */}
             </div>
           </motion.div>
         )}
