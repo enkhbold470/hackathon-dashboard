@@ -58,13 +58,11 @@ jest.mock('@/lib/applicationData', () => ({
           }
         }
       }
+    },
+    disclaimer: {
+      title: "Disclaimer",
+      content: "This is a disclaimer"
     }
-  },
-  formToDbMapping: {
-    fullName: "full_name",
-    cwid: "cwid",
-    school: "school",
-    agreeToTerms: "agree_to_terms"
   },
   toDbColumn: (field: string): string => {
     const mapping: Record<string, string> = {
@@ -84,6 +82,13 @@ jest.mock('@/lib/applicationData', () => ({
     };
     return mapping[dbField] || dbField;
   }
+}));
+
+// Mock toast hook
+jest.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({
+    toast: jest.fn()
+  })
 }));
 
 // Mock the UI components
@@ -149,6 +154,14 @@ jest.mock('@/components/ui/label', () => ({
   Label: ({ children }: { children: React.ReactNode }) => <div data-testid="mock-label">{children}</div>,
 }));
 
+// Mock Next.js Link
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href} data-testid="mock-link">{children}</a>
+  ),
+}));
+
 // Mock React Hook Form
 jest.mock('react-hook-form', () => {
   const originalModule = jest.requireActual('react-hook-form');
@@ -162,6 +175,7 @@ jest.mock('react-hook-form', () => {
         cb({
           full_name: 'Test User',
           cwid: '12345',
+          school: 'Test School',
           agree_to_terms: true
         });
       },
@@ -172,12 +186,19 @@ jest.mock('react-hook-form', () => {
       getValues: () => ({
         full_name: 'Test User',
         cwid: '12345',
+        school: 'Test School',
         agree_to_terms: true
       }),
       setValue: jest.fn(),
       control: {}
     }),
   };
+});
+
+// Mock window resize listener
+Object.defineProperty(window, 'innerWidth', {
+  writable: true,
+  value: 1024
 });
 
 describe('ApplicationForm', () => {
@@ -224,6 +245,7 @@ describe('ApplicationForm', () => {
         formData={{ 
           full_name: 'Test User', 
           cwid: '12345', 
+          school: 'Test School',
           agree_to_terms: true 
         }} 
       />
@@ -233,8 +255,9 @@ describe('ApplicationForm', () => {
     const submitButton = screen.getByTestId('mock-button-submit');
     fireEvent.click(submitButton);
     
-    // Verify onSubmit was called
+    // Verify onSubmit was called without parameters
     expect(mockOnSubmit).toHaveBeenCalled();
+    expect(mockOnSubmit).toHaveBeenCalledWith();
   });
 
   it('displays loading state when submitting', () => {
@@ -248,5 +271,18 @@ describe('ApplicationForm', () => {
     // Check for loading indicator or disabled state on the submit button
     expect(screen.getByTestId('mock-button-submit')).toHaveAttribute('disabled');
     expect(screen.getByText('Processing...')).toBeInTheDocument();
+  });
+
+  it('displays submitted state when form is submitted', () => {
+    render(
+      <ApplicationForm 
+        {...defaultProps} 
+        isSubmitted={true} 
+      />
+    );
+    
+    // Check for submitted state on the submit button
+    expect(screen.getByTestId('mock-button-submit')).toHaveAttribute('disabled');
+    expect(screen.getByText('Submitted')).toBeInTheDocument();
   });
 }); 
