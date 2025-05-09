@@ -11,6 +11,8 @@ import {
 } from '@clerk/nextjs'
 import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
+import { Analytics } from "@vercel/analytics/react"
+
 
 export const metadata: Metadata = {
   title: siteConfig.title,
@@ -69,6 +71,7 @@ export default function RootLayout({
             <Toaster />
           </Providers>
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
