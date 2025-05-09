@@ -1,5 +1,4 @@
 import ApplicationDashboard from "@/components/application-dashboard"
-import { SignedIn, SignedOut } from '@clerk/nextjs'
 
 export default function Home() {
   return (

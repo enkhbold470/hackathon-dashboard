@@ -65,6 +65,27 @@ pnpm prisma:push
 pnpm dev
 ```
 
+## Environment Setup
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# Database
+DATABASE_URL="your_database_connection_string"
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key"
+CLERK_SECRET_KEY="your_clerk_secret_key"
+```
+
+### Setting up Clerk
+
+1. Create an account at [clerk.com](https://clerk.com)
+2. Create a new application in the Clerk dashboard
+3. Copy your API keys from the Clerk dashboard
+4. Configure your application's authentication settings in the Clerk dashboard
+5. Update the environment variables with your Clerk API keys
+
 ## Optimizations
 
 The following optimizations have been implemented:
