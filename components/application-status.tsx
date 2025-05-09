@@ -364,6 +364,13 @@ export default function ApplicationStatus({ status, cwid }: ApplicationStatusPro
                 description={"CWID: " + hackerCWID}
                 size={isMobile ? 180 : 250}
               />
+              <p className="text-center mb-6" style={{ 
+                color: colors.theme.foreground,
+                fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText,
+                lineHeight: uiConfig.typography.lineHeight.relaxed
+              }}>
+                Please take a screenshot of this QR code and present it during check-in at the event.
+              </p>
               
               {/* <WalletButtons 
                 cwid={hackerCWID}
