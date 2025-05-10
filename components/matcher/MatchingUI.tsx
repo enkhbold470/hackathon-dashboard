@@ -126,7 +126,7 @@ export default function MatchingUI({
           className={`fixed inset-0 bg-green-500/10 pointer-events-none ${styles.flash}`}
         />
       )}
-      <div className="relative w-80 h-96">
+      <div className="relative w-80 h-96 sm:w-96 sm:h-[32rem]">
         {cards.map((profile, index) => (
           <TinderCard
             ref={childRefs[index]}
@@ -135,11 +135,11 @@ export default function MatchingUI({
             preventSwipe={["up", "down"]}
           >
             <Card
-              className="w-80 h-96 overflow-hidden rounded-2xl shadow-lg absolute top-0 left-0 cursor-pointer select-none"
+              className="w-80 h-96 sm:w-96 sm:h-[32rem] overflow-hidden rounded-2xl shadow-lg absolute top-0 left-0 cursor-pointer select-none"
               style={{ zIndex: index }}
             >
               <div 
-                className="relative w-full h-48 bg-cover bg-center bg-no-repeat"
+                className="relative w-full h-48 sm:h-64 bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${profile.avatar})` }}
               />
               <CardHeader>

@@ -12,7 +12,6 @@ export default function Matcher() {
     fetch('/api/db/get')
       .then(res => res.json())
       .then(data => {
-        console.log(data);
         if (data.application && (data.application.status === "accepted" || data.application.status === "confirmed")) {
           setCanAccess(true);
         } else {

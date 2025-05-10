@@ -325,7 +325,7 @@ export default function ApplicationDashboard() {
             width={width || 300}
             height={height || 300}
             recycle={false}
-            numberOfPieces={500}
+            numberOfPieces={200}
             onConfettiComplete={() => setIsExploding(false)}
           />
         )}
