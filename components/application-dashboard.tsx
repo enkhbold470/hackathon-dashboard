@@ -524,7 +524,7 @@ export default function ApplicationDashboard() {
                         className="text-xl font-semibold my-4"
                         style={{ color: colors.theme.primary }}
                       >
-                        Next: Find your team
+                        Next: Find your team!
                       </h3>
                       <Link
                         href="/matcher"
@@ -532,7 +532,10 @@ export default function ApplicationDashboard() {
                         <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
                           <div className="flex items-center gap-4">
                             <div className="flex-1">
-                              <h4 className="text-xl font-semibold mb-2">Hackathon Team Matcher</h4>
+                              <h4 className="text-xl font-semibold mb-2">DAHacks Matchathon</h4>
+                              <p className="text-sm text-gray-200">
+                                Don't have a team? Use our team matcher to find one!
+                              </p>
                             </div>
                             <div className="text-2xl">→</div>
                           </div>

@@ -68,7 +68,12 @@ export default function RootLayout({
               </SignedIn>
             </header>
             <main>{children}</main>
-            <Toaster position="top-center" richColors visibleToasts={1} duration={3000} />
+            <Toaster 
+              position="top-center" 
+              richColors
+              visibleToasts={1}
+              duration={3000}
+            />
           </Providers>
         </ClerkProvider>
         <Analytics />
