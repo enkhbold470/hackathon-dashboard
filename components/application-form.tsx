@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { toast } from "sonner"
 import { Label } from "@/components/ui/label"
 import { Check } from "lucide-react"
 import Link from "next/link"
@@ -442,7 +442,6 @@ function ApplicationForm({
   isSubmitting,
   isSubmitted,
 }: ApplicationFormProps) {
-  const { toast } = useToast()
   const [savingFields, setSavingFields] = useState<Record<string, boolean>>({})
   const [savedFields, setSavedFields] = useState<Record<string, boolean>>({})
   const [isMobile, setIsMobile] = useState(false)
@@ -546,11 +545,7 @@ function ApplicationForm({
         setSavedFields(prev => ({ ...prev, [name]: false }))
       }, 2000)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save changes. Please try again.",
-        variant: "destructive"
-      })
+      toast.error("Failed to save changes. Please try again.");
     } finally {
       setSavingFields(prev => ({ ...prev, [name]: false }))
     }
