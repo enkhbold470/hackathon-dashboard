@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
 import {
   ClerkProvider,
   SignInButton,
@@ -9,6 +8,7 @@ import {
   SignedOut,
   UserButton
 } from '@clerk/nextjs'
+import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { Analytics } from "@vercel/analytics/react"
@@ -68,7 +68,7 @@ export default function RootLayout({
               </SignedIn>
             </header>
             <main>{children}</main>
-            <Toaster />
+            <Toaster position="top-center" richColors visibleToasts={1} duration={3000} />
           </Providers>
         </ClerkProvider>
         <Analytics />
