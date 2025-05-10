@@ -10,7 +10,6 @@ import colors from "@/lib/colors"
 import uiConfig from "@/lib/ui-config"
 import { applicationStatusData } from "@/lib/applicationData"
 import QRCode from "@/components/qr-code"
-import WalletButtons from "@/components/wallet-buttons"
 import { useUser } from "@clerk/nextjs"
 
 type ApplicationStatus = "not_started" | "in_progress" | "submitted" | "accepted" | "waitlisted" | "confirmed"
@@ -371,94 +370,10 @@ export default function ApplicationStatus({ status, cwid }: ApplicationStatusPro
               }}>
                 Please take a screenshot of this QR code and present it during check-in at the event.
               </p>
-              
-              {/* <WalletButtons 
-                cwid={hackerCWID}
-                isMobile={isMobile}
-                buttonTextSize={isMobile ? uiConfig.typography.fontSize.mobile.buttonText : uiConfig.typography.fontSize.buttonText}
-                borderRadius={uiConfig.borderRadius.md}
-              /> */}
             </div>
           </motion.div>
         )}
       </motion.div>
-        {/* //Info about the hackathon */}
-
-      {/* <motion.div
-        className="rounded-lg border p-6 relative overflow-hidden"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        style={{
-          backgroundColor: colors.theme.background,
-          borderColor: colors.theme.background,
-          padding: isMobile ? uiConfig.spacing.mobile.sectionPadding : uiConfig.spacing.sectionPadding,
-          borderRadius: uiConfig.borderRadius.lg,
-          boxShadow: uiConfig.shadows.sm,
-        }}
-      >
-        <div className="relative z-10">
-          <h4 
-            className="font-medium mb-4 text-lg" 
-            style={{ 
-              color: colors.theme.primary,
-              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-              fontWeight: uiConfig.typography.fontWeight.medium,
-            }}
-          >
-            About DAHacks 3.5
-          </h4>
-          
-          <div className="space-y-6 text-base">
-            {applicationStatus.hackathonInfo.sections.map((section: any, index: number) => (
-              <motion.div 
-                key={index}
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                transition={{ duration: 0.5, delay: 0.6 + (index * 0.1) }}
-                className="space-y-2"
-              >
-                <h5 
-                  className="font-medium" 
-                  style={{ 
-                    color: colors.theme.foreground,
-                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.questionTitle : uiConfig.typography.fontSize.questionTitle,
-                    fontWeight: uiConfig.typography.fontWeight.medium,
-                  }}
-                >
-                  {section.title}
-                </h5>
-                
-                <p 
-                  className="leading-relaxed" 
-                  style={{ 
-                    color: colors.theme.foreground,
-                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
-                    lineHeight: uiConfig.typography.lineHeight.relaxed,
-                  }}
-                >
-                  {section.title === "Questions?" ? (
-                    <>
-                      {section.content.split(":")[0]}:{" "}
-                      <a
-                        href="mailto:inky@deanzahacks.com"
-                        style={{
-                          color: colors.theme.linkText,
-                          textDecoration: "underline",
-                        }}
-                      >
-                        inky@deanzahacks.com
-                      </a>
-                    </>
-                  ) : (
-                    section.content
-                  )}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.div> */}
     </motion.div>
   );
 }

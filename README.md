@@ -70,7 +70,7 @@ pnpm dev
 Create a `.env.local` file in the root directory with the following variables:
 
 ```bash
-# Database
+# Database, e.g. "postgresql://postgres:12345@localhost:5432/hackathon_db"
 DATABASE_URL="your_database_connection_string"
 
 # Clerk Authentication

@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -27,7 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
-import { applicationData, applicationStatusData } from "@/lib/applicationData";
+import { applicationStatusData } from "@/lib/applicationData";
 
 type Status =
   | "not_started"
@@ -483,36 +482,6 @@ export default function ApplicationDashboard() {
             className="border shadow-md"
           >
             <TabsContent value="application" className="mt-0">
-              {/* <CardHeader style={{
-                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-              }}>
-                <CardTitle 
-                  className="text-2xl"
-                  style={{
-                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-                    fontWeight: uiConfig.typography.fontWeight.bold,
-                    color: colors.theme.primary
-                  }}
-                >
-                  Hackathon Application
-                </CardTitle>
-                <CardDescription style={{ 
-                  color: colors.palette.foreground,
-                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
-                }}>
-                  Fill out the form below to apply for the hackathon.
-                  {isSaving && <span className="ml-2">(Saving...)</span>}
-                  {lastSaved && !isSaving && (
-                    <div className="mt-2 text-xs">
-                      Last saved:{" "}
-                      {new Date(lastSaved).toLocaleString(undefined, {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
-                    </div>
-                  )}
-                </CardDescription>
-              </CardHeader> */}
               <CardContent
                 style={{
                   padding: isMobile
@@ -536,29 +505,6 @@ export default function ApplicationDashboard() {
             </TabsContent>
 
             <TabsContent value="status" className="mt-0">
-              <CardHeader
-                style={{
-                  padding: isMobile
-                    ? uiConfig.spacing.mobile.containerPadding
-                    : uiConfig.spacing.containerPadding,
-                }}
-              >
-                <CardTitle
-                  className="text-2xl mb-6"
-                  style={{
-                    fontSize: isMobile
-                      ? uiConfig.typography.fontSize.mobile.sectionTitle
-                      : uiConfig.typography.fontSize.sectionTitle,
-                    fontWeight: uiConfig.typography.fontWeight.bold,
-                    color: colors.theme.primary,
-                  }}
-                >
-                  Application Status
-                </CardTitle>
-
-          
-              </CardHeader>
-
               <CardContent
                 style={{
                   padding: isMobile
@@ -571,7 +517,32 @@ export default function ApplicationDashboard() {
                   cwid={formData?.cwid}
                 />
 
-<div className="space-y-4">
+                {(applicationStatus === 'accepted' || applicationStatus === 'confirmed') && (
+                  <div className="space-y-4 mb-8 bg-orange-500/10 rounded-lg p-4">
+                    <div>
+                      <h3
+                        className="text-xl font-semibold my-4"
+                        style={{ color: colors.theme.primary }}
+                      >
+                        Next: Find your team
+                      </h3>
+                      <Link
+                        href="/matcher"
+                      >
+                        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow">
+                          <div className="flex items-center gap-4">
+                            <div className="flex-1">
+                              <h4 className="text-xl font-semibold mb-2">Hackathon Team Matcher</h4>
+                            </div>
+                            <div className="text-2xl">→</div>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
                   <div>
                     <h3
                       className="text-xl font-semibold my-4"
@@ -600,7 +571,6 @@ export default function ApplicationDashboard() {
                     </div>
                   </div>
                 </div>
-
 
                 <div>
                   <h3
