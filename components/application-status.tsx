@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle, Clock, XCircle, AlertCircle, PartyPopper, Terminal, Code, Smartphone } from "lucide-react"
+import { CheckCircle, Clock, XCircle, AlertCircle, PartyPopper, Terminal, Code, Smartphone, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 import colors from "@/lib/colors"
 import uiConfig from "@/lib/ui-config"
@@ -18,6 +18,7 @@ type ApplicationStatus = "not_started" | "in_progress" | "submitted" | "accepted
 interface ApplicationStatusProps {
   status: ApplicationStatus
   cwid?: string
+  isLoading?: boolean
 }
 
 // Icon mapping for dynamic icon rendering
@@ -35,12 +36,13 @@ const IconMap = {
 // Type for theme colors to avoid indexing errors
 type ThemeColorKey = keyof typeof colors.theme;
 
-export default function ApplicationStatus({ status, cwid }: ApplicationStatusProps) {
+export default function ApplicationStatus({ status, cwid, isLoading = false }: ApplicationStatusProps) {
   const [animate, setAnimate] = useState(false)
   const [typedText, setTypedText] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [hackerCWID, setHackerCWID] = useState<string | undefined>(cwid)
+  const [fetchingData, setFetchingData] = useState(false)
   const { user } = useUser()
   
   // Fetch CWID if not provided
@@ -48,6 +50,7 @@ export default function ApplicationStatus({ status, cwid }: ApplicationStatusPro
     const fetchCWID = async () => {
       if (!hackerCWID && user?.id && ['accepted', 'confirmed'].includes(status)) {
         try {
+          setFetchingData(true);
           const response = await fetch(`/api/db/application?userId=${user.id}`);
           const data = await response.json();
           if (data?.application?.cwid) {
@@ -55,6 +58,8 @@ export default function ApplicationStatus({ status, cwid }: ApplicationStatusPro
           }
         } catch (error) {
           console.error("Error fetching CWID:", error);
+        } finally {
+          setFetchingData(false);
         }
       }
     };
@@ -129,6 +134,15 @@ export default function ApplicationStatus({ status, cwid }: ApplicationStatusPro
 
   // These functions should be passed via props in a real implementation
   const onConfirmSpot = () => window.dispatchEvent(new CustomEvent('confirmAttendance'))
+
+  if (isLoading || fetchingData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+        <p className="text-lg font-medium">Loading status information...</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -382,83 +396,6 @@ export default function ApplicationStatus({ status, cwid }: ApplicationStatusPro
           </motion.div>
         )}
       </motion.div>
-        {/* //Info about the hackathon */}
-
-      {/* <motion.div
-        className="rounded-lg border p-6 relative overflow-hidden"
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        style={{
-          backgroundColor: colors.theme.background,
-          borderColor: colors.theme.background,
-          padding: isMobile ? uiConfig.spacing.mobile.sectionPadding : uiConfig.spacing.sectionPadding,
-          borderRadius: uiConfig.borderRadius.lg,
-          boxShadow: uiConfig.shadows.sm,
-        }}
-      >
-        <div className="relative z-10">
-          <h4 
-            className="font-medium mb-4 text-lg" 
-            style={{ 
-              color: colors.theme.primary,
-              fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-              fontWeight: uiConfig.typography.fontWeight.medium,
-            }}
-          >
-            About DAHacks 3.5
-          </h4>
-          
-          <div className="space-y-6 text-base">
-            {applicationStatus.hackathonInfo.sections.map((section: any, index: number) => (
-              <motion.div 
-                key={index}
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                transition={{ duration: 0.5, delay: 0.6 + (index * 0.1) }}
-                className="space-y-2"
-              >
-                <h5 
-                  className="font-medium" 
-                  style={{ 
-                    color: colors.theme.foreground,
-                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.questionTitle : uiConfig.typography.fontSize.questionTitle,
-                    fontWeight: uiConfig.typography.fontWeight.medium,
-                  }}
-                >
-                  {section.title}
-                </h5>
-                
-                <p 
-                  className="leading-relaxed" 
-                  style={{ 
-                    color: colors.theme.foreground,
-                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.answerOption : uiConfig.typography.fontSize.answerOption,
-                    lineHeight: uiConfig.typography.lineHeight.relaxed,
-                  }}
-                >
-                  {section.title === "Questions?" ? (
-                    <>
-                      {section.content.split(":")[0]}:{" "}
-                      <a
-                        href="mailto:inky@deanzahacks.com"
-                        style={{
-                          color: colors.theme.linkText,
-                          textDecoration: "underline",
-                        }}
-                      >
-                        inky@deanzahacks.com
-                      </a>
-                    </>
-                  ) : (
-                    section.content
-                  )}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.div> */}
     </motion.div>
   );
 }

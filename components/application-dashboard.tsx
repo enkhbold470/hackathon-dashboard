@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { applicationData, applicationStatusData } from "@/lib/applicationData";
+import { Loader2 } from "lucide-react";
 
 type Status =
   | "not_started"
@@ -50,10 +51,9 @@ export default function ApplicationDashboard() {
   const [submissionData, setSubmissionData] = useState<Record<string, any>>({});
   const [isMobile, setIsMobile] = useState(false);
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const hasUnsavedChanges = useRef(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [pendingTabChange, setPendingTabChange] = useState<string | null>(null);
 
   // Check for mobile viewport
   useEffect(() => {
@@ -73,14 +73,19 @@ export default function ApplicationDashboard() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Clear auto-save timer on component unmount
+  // Setup beforeunload handler for unsaved changes
   useEffect(() => {
-    return () => {
-      if (autoSaveTimerRef.current) {
-        clearInterval(autoSaveTimerRef.current);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && applicationStatus === "in_progress") {
+        e.preventDefault();
+        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+        return e.returnValue;
       }
     };
-  }, []);
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges, applicationStatus]);
 
   useEffect(() => {
     const fetchApplication = async () => {
@@ -152,13 +157,35 @@ export default function ApplicationDashboard() {
   const handleFormChange = async (newData: Record<string, any>) => {
     const updatedFormData = { ...formData, ...newData };
     setFormData(updatedFormData);
-    hasUnsavedChanges.current = true;
+    setHasUnsavedChanges(true);
 
     if (applicationStatus === "not_started") {
       setApplicationStatus("in_progress");
     }
 
-    // Don't save automatically when changes are made - only on submission
+    // Autosave can be implemented here
+  };
+
+  const handleTabChange = (value: string) => {
+    if (hasUnsavedChanges && applicationStatus === "in_progress" && activeTab === "application") {
+      setPendingTabChange(value);
+      setShowUnsavedDialog(true);
+    } else {
+      setActiveTab(value);
+    }
+  };
+
+  const confirmTabChange = () => {
+    if (pendingTabChange) {
+      setActiveTab(pendingTabChange);
+      setPendingTabChange(null);
+    }
+    setShowUnsavedDialog(false);
+  };
+
+  const cancelTabChange = () => {
+    setPendingTabChange(null);
+    setShowUnsavedDialog(false);
   };
 
   const prepareSubmission = () => {
@@ -238,6 +265,7 @@ export default function ApplicationDashboard() {
         setFormData(result.application);
         setApplicationStatus("submitted");
         setActiveTab("status");
+        setHasUnsavedChanges(false);
         toast.success("Application submitted successfully!");
       } else {
         throw new Error(result.error || "Failed to submit application");
@@ -345,308 +373,364 @@ export default function ApplicationDashboard() {
           Hackathon Application
         </h1>
 
-        <AlertDialog
-          open={showConfirmDialog}
-          onOpenChange={setShowConfirmDialog}
-        >
-          <AlertDialogContent
-            style={{
-              borderRadius: uiConfig.borderRadius.md,
-              backgroundColor: colors.theme.background,
-              border: `1px solid ${colors.theme.inputBorder}`,
-              padding: isMobile
-                ? uiConfig.spacing.mobile.containerPadding
-                : uiConfig.spacing.containerPadding,
-            }}
-          >
-            <AlertDialogHeader>
-              <AlertDialogTitle
-                style={{
-                  fontSize: isMobile
-                    ? uiConfig.typography.fontSize.mobile.sectionTitle
-                    : uiConfig.typography.fontSize.sectionTitle,
-                  fontWeight: uiConfig.typography.fontWeight.bold,
-                  color: colors.theme.primary,
-                }}
-              >
-                Submit Application?
-              </AlertDialogTitle>
-              <AlertDialogDescription
-                style={{
-                  fontSize: isMobile
-                    ? uiConfig.typography.fontSize.mobile.answerOption
-                    : uiConfig.typography.fontSize.answerOption,
-                  color: colors.theme.secondary,
-                }}
-              >
-                Are you sure you want to submit your application? You won't be
-                able to make changes after submission.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
-              <AlertDialogCancel
-                style={{
-                  fontSize: uiConfig.typography.fontSize.buttonText,
-                  borderRadius: uiConfig.borderRadius.md,
-                }}
-              >
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => handleFormSubmit(submissionData)}
-                className="bg-theme-primary text-white hover:bg-theme-primary/90"
-                style={{
-                  backgroundColor: colors.theme.primary,
-                  color: colors.theme.buttonText,
-                  fontSize: uiConfig.typography.fontSize.buttonText,
-                  borderRadius: uiConfig.borderRadius.md,
-                }}
-              >
-                Submit
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList
-            className={`grid w-full grid-cols-2 mb-8`}
-            style={{
-              marginBottom: isMobile ? "1.5rem" : "2rem",
-            }}
-          >
-            <TabsTrigger
-              value="application"
-              disabled={
-                ["submitted", "accepted", "waitlisted", "confirmed"].includes(
-                  applicationStatus
-                ) && !isLoading
-              }
-              style={{
-                backgroundColor:
-                  activeTab === "application"
-                    ? colors.theme.primary
-                    : colors.theme.background,
-                color:
-                  activeTab === "application"
-                    ? colors.theme.buttonText
-                    : colors.theme.foreground,
-                borderColor: colors.theme.inputBorder,
-                fontSize: isMobile
-                  ? uiConfig.typography.fontSize.mobile.buttonText
-                  : uiConfig.typography.fontSize.buttonText,
-                fontWeight: uiConfig.typography.fontWeight.medium,
-                padding: isMobile
-                  ? uiConfig.spacing.mobile.buttonPadding
-                  : uiConfig.spacing.buttonPadding,
-                borderRadius: uiConfig.borderRadius.md,
-              }}
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[300px]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-lg font-medium">Loading application...</span>
+          </div>
+        ) : (
+          <>
+            <AlertDialog
+              open={showConfirmDialog}
+              onOpenChange={setShowConfirmDialog}
             >
-              Application Form
-            </TabsTrigger>
-            <TabsTrigger
-              value="status"
-              disabled={applicationStatus === "not_started" && !isLoading}
-              style={{
-                backgroundColor:
-                  activeTab === "status"
-                    ? colors.theme.primary
-                    : colors.theme.background,
-                color:
-                  activeTab === "status"
-                    ? colors.theme.buttonText
-                    : colors.theme.foreground,
-                borderColor: colors.theme.inputBorder,
-                fontSize: isMobile
-                  ? uiConfig.typography.fontSize.mobile.buttonText
-                  : uiConfig.typography.fontSize.buttonText,
-                fontWeight: uiConfig.typography.fontWeight.medium,
-                padding: isMobile
-                  ? uiConfig.spacing.mobile.buttonPadding
-                  : uiConfig.spacing.buttonPadding,
-                borderRadius: uiConfig.borderRadius.md,
-              }}
-            >
-              Application Status
-            </TabsTrigger>
-          </TabsList>
+              <AlertDialogContent
+                style={{
+                  borderRadius: uiConfig.borderRadius.md,
+                  backgroundColor: colors.theme.background,
+                  border: `1px solid ${colors.theme.inputBorder}`,
+                  padding: isMobile
+                    ? uiConfig.spacing.mobile.containerPadding
+                    : uiConfig.spacing.containerPadding,
+                }}
+              >
+                <AlertDialogHeader>
+                  <AlertDialogTitle
+                    style={{
+                      fontSize: isMobile
+                        ? uiConfig.typography.fontSize.mobile.sectionTitle
+                        : uiConfig.typography.fontSize.sectionTitle,
+                      fontWeight: uiConfig.typography.fontWeight.bold,
+                      color: colors.theme.primary,
+                    }}
+                  >
+                    Submit Application?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription
+                    style={{
+                      fontSize: isMobile
+                        ? uiConfig.typography.fontSize.mobile.answerOption
+                        : uiConfig.typography.fontSize.answerOption,
+                      color: colors.theme.secondary,
+                    }}
+                  >
+                    Are you sure you want to submit your application? You won't be
+                    able to make changes after submission.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
+                  <AlertDialogCancel
+                    style={{
+                      fontSize: uiConfig.typography.fontSize.buttonText,
+                      borderRadius: uiConfig.borderRadius.md,
+                    }}
+                  >
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleFormSubmit(submissionData)}
+                    className="bg-theme-primary text-white hover:bg-theme-primary/90"
+                    style={{
+                      backgroundColor: colors.theme.primary,
+                      color: colors.theme.buttonText,
+                      fontSize: uiConfig.typography.fontSize.buttonText,
+                      borderRadius: uiConfig.borderRadius.md,
+                    }}
+                  >
+                    Submit
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
-          <Card
-            style={{
-              backgroundColor: uiConfig.inputStyles.sectionBackground,
-              borderColor: colors.theme.inputBorder,
-              borderRadius: uiConfig.inputStyles.sectionBorderRadius,
-              boxShadow: uiConfig.inputStyles.sectionBoxShadow,
-              overflow: "hidden",
-              width: "100%",
-            }}
-            className="border shadow-md"
-          >
-            <TabsContent value="application" className="mt-0">
-              {/* <CardHeader style={{
-                padding: isMobile ? uiConfig.spacing.mobile.containerPadding : uiConfig.spacing.containerPadding
-              }}>
-                <CardTitle 
-                  className="text-2xl"
+            <AlertDialog
+              open={showUnsavedDialog}
+              onOpenChange={setShowUnsavedDialog}
+            >
+              <AlertDialogContent
+                style={{
+                  borderRadius: uiConfig.borderRadius.md,
+                  backgroundColor: colors.theme.background,
+                  border: `1px solid ${colors.theme.inputBorder}`,
+                  padding: isMobile
+                    ? uiConfig.spacing.mobile.containerPadding
+                    : uiConfig.spacing.containerPadding,
+                }}
+              >
+                <AlertDialogHeader>
+                  <AlertDialogTitle
+                    style={{
+                      fontSize: isMobile
+                        ? uiConfig.typography.fontSize.mobile.sectionTitle
+                        : uiConfig.typography.fontSize.sectionTitle,
+                      fontWeight: uiConfig.typography.fontWeight.bold,
+                      color: colors.theme.warning,
+                    }}
+                  >
+                    Unsaved Changes
+                  </AlertDialogTitle>
+                  <AlertDialogDescription
+                    style={{
+                      fontSize: isMobile
+                        ? uiConfig.typography.fontSize.mobile.answerOption
+                        : uiConfig.typography.fontSize.answerOption,
+                      color: colors.theme.secondary,
+                    }}
+                  >
+                    You have unsaved changes in your application. If you leave now, your changes may be lost.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className={isMobile ? "flex-col space-y-2" : ""}>
+                  <AlertDialogCancel
+                    onClick={cancelTabChange}
+                    style={{
+                      fontSize: uiConfig.typography.fontSize.buttonText,
+                      borderRadius: uiConfig.borderRadius.md,
+                    }}
+                  >
+                    Stay on Form
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={confirmTabChange}
+                    className="bg-theme-warning text-white hover:bg-theme-warning/90"
+                    style={{
+                      backgroundColor: colors.theme.warning,
+                      color: colors.theme.buttonText,
+                      fontSize: uiConfig.typography.fontSize.buttonText,
+                      borderRadius: uiConfig.borderRadius.md,
+                    }}
+                  >
+                    Discard Changes
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <TabsList
+                className={`grid w-full grid-cols-2 mb-8`}
+                style={{
+                  marginBottom: isMobile ? "1.5rem" : "2rem",
+                }}
+              >
+                <TabsTrigger
+                  value="application"
+                  disabled={
+                    ["submitted", "accepted", "waitlisted", "confirmed"].includes(
+                      applicationStatus
+                    ) && !isLoading
+                  }
                   style={{
-                    fontSize: isMobile ? uiConfig.typography.fontSize.mobile.sectionTitle : uiConfig.typography.fontSize.sectionTitle,
-                    fontWeight: uiConfig.typography.fontWeight.bold,
-                    color: colors.theme.primary
+                    backgroundColor:
+                      activeTab === "application"
+                        ? colors.theme.primary
+                        : colors.theme.background,
+                    color:
+                      activeTab === "application"
+                        ? colors.theme.buttonText
+                        : colors.theme.foreground,
+                    borderColor: colors.theme.inputBorder,
+                    fontSize: isMobile
+                      ? uiConfig.typography.fontSize.mobile.buttonText
+                      : uiConfig.typography.fontSize.buttonText,
+                    fontWeight: uiConfig.typography.fontWeight.medium,
+                    padding: isMobile
+                      ? uiConfig.spacing.mobile.buttonPadding
+                      : uiConfig.spacing.buttonPadding,
+                    borderRadius: uiConfig.borderRadius.md,
                   }}
                 >
-                  Hackathon Application
-                </CardTitle>
-                <CardDescription style={{ 
-                  color: colors.palette.foreground,
-                  fontSize: isMobile ? uiConfig.typography.fontSize.mobile.helperText : uiConfig.typography.fontSize.helperText
-                }}>
-                  Fill out the form below to apply for the hackathon.
-                  {isSaving && <span className="ml-2">(Saving...)</span>}
-                  {lastSaved && !isSaving && (
-                    <div className="mt-2 text-xs">
-                      Last saved:{" "}
-                      {new Date(lastSaved).toLocaleString(undefined, {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
-                    </div>
+                  Application Form
+                  {hasUnsavedChanges && applicationStatus === "in_progress" && (
+                    <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-yellow-500 text-white">*</span>
                   )}
-                </CardDescription>
-              </CardHeader> */}
-              <CardContent
-                style={{
-                  padding: isMobile
-                    ? uiConfig.spacing.mobile.containerPadding
-                    : uiConfig.spacing.containerPadding,
-                }}
-              >
-                <ApplicationForm
-                  formData={formData}
-                  onChange={handleFormChange}
-                  onSubmit={() => prepareSubmission()}
-                  isSubmitted={[
-                    "submitted",
-                    "accepted",
-                    "waitlisted",
-                    "confirmed",
-                  ].includes(applicationStatus)}
-                  isSubmitting={isSubmitting}
-                />
-              </CardContent>
-            </TabsContent>
-
-            <TabsContent value="status" className="mt-0">
-              <CardHeader
-                style={{
-                  padding: isMobile
-                    ? uiConfig.spacing.mobile.containerPadding
-                    : uiConfig.spacing.containerPadding,
-                }}
-              >
-                <CardTitle
-                  className="text-2xl mb-6"
+                </TabsTrigger>
+                <TabsTrigger
+                  value="status"
+                  disabled={applicationStatus === "not_started" && !isLoading}
                   style={{
+                    backgroundColor:
+                      activeTab === "status"
+                        ? colors.theme.primary
+                        : colors.theme.background,
+                    color:
+                      activeTab === "status"
+                        ? colors.theme.buttonText
+                        : colors.theme.foreground,
+                    borderColor: colors.theme.inputBorder,
                     fontSize: isMobile
-                      ? uiConfig.typography.fontSize.mobile.sectionTitle
-                      : uiConfig.typography.fontSize.sectionTitle,
-                    fontWeight: uiConfig.typography.fontWeight.bold,
-                    color: colors.theme.primary,
+                      ? uiConfig.typography.fontSize.mobile.buttonText
+                      : uiConfig.typography.fontSize.buttonText,
+                    fontWeight: uiConfig.typography.fontWeight.medium,
+                    padding: isMobile
+                      ? uiConfig.spacing.mobile.buttonPadding
+                      : uiConfig.spacing.buttonPadding,
+                    borderRadius: uiConfig.borderRadius.md,
                   }}
                 >
                   Application Status
-                </CardTitle>
+                </TabsTrigger>
+              </TabsList>
 
-          
-              </CardHeader>
-
-              <CardContent
+              <Card
                 style={{
-                  padding: isMobile
-                    ? uiConfig.spacing.mobile.containerPadding
-                    : uiConfig.spacing.containerPadding,
+                  backgroundColor: uiConfig.inputStyles.sectionBackground,
+                  borderColor: colors.theme.inputBorder,
+                  borderRadius: uiConfig.inputStyles.sectionBorderRadius,
+                  boxShadow: uiConfig.inputStyles.sectionBoxShadow,
+                  overflow: "hidden",
+                  width: "100%",
                 }}
+                className="border shadow-md"
               >
-                <ApplicationStatus
-                  status={applicationStatus}
-                  cwid={formData?.cwid}
-                />
+                <TabsContent value="application" className="mt-0">
+                  <CardContent
+                    style={{
+                      padding: isMobile
+                        ? uiConfig.spacing.mobile.containerPadding
+                        : uiConfig.spacing.containerPadding,
+                    }}
+                  >
+                    {hasUnsavedChanges && applicationStatus === "in_progress" && (
+                      <div 
+                        className="mb-4 p-2 rounded-md border border-yellow-500 bg-yellow-500/10 flex items-center"
+                        style={{
+                          borderRadius: uiConfig.borderRadius.md,
+                        }}
+                      >
+                        <span className="text-yellow-500 font-medium">
+                          You have unsaved changes. Your changes will be saved when you submit.
+                        </span>
+                      </div>
+                    )}
+                    
+                    <ApplicationForm
+                      formData={formData}
+                      onChange={handleFormChange}
+                      onSubmit={() => prepareSubmission()}
+                      isSubmitted={[
+                        "submitted",
+                        "accepted",
+                        "waitlisted",
+                        "confirmed",
+                      ].includes(applicationStatus)}
+                      isSubmitting={isSubmitting}
+                    />
+                  </CardContent>
+                </TabsContent>
 
-<div className="space-y-4">
-                  <div>
-                    <h3
-                      className="text-xl font-semibold my-4"
-                      style={{ color: colors.theme.primary }}
+                <TabsContent value="status" className="mt-0">
+                  <CardHeader
+                    style={{
+                      padding: isMobile
+                        ? uiConfig.spacing.mobile.containerPadding
+                        : uiConfig.spacing.containerPadding,
+                    }}
+                  >
+                    <CardTitle
+                      className="text-2xl mb-6"
+                      style={{
+                        fontSize: isMobile
+                          ? uiConfig.typography.fontSize.mobile.sectionTitle
+                          : uiConfig.typography.fontSize.sectionTitle,
+                        fontWeight: uiConfig.typography.fontWeight.bold,
+                        color: colors.theme.primary,
+                      }}
                     >
-                      Previous Hackathon Projects
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {applicationStatusData.devpost.links.map((link) => (
+                      Application Status
+                    </CardTitle>
+                  </CardHeader>
+
+                  <CardContent
+                    style={{
+                      padding: isMobile
+                        ? uiConfig.spacing.mobile.containerPadding
+                        : uiConfig.spacing.containerPadding,
+                    }}
+                  >
+                    <ApplicationStatus
+                      status={applicationStatus}
+                      cwid={formData?.cwid}
+                      isLoading={isLoading}
+                    />
+
+                    <div className="space-y-4">
+                      <div>
+                        <h3
+                          className="text-xl font-semibold my-4"
+                          style={{ color: colors.theme.primary }}
+                        >
+                          Previous Hackathon Projects
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {applicationStatusData.devpost.links.map((link) => (
+                            <Link
+                              key={link.url}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <div className="bg-white dark:bg-gray-800 rounded-lg p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
+                                <h4 className="font-medium text-theme-primary hover:underline">
+                                  {link.title}
+                                </h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                  View project showcase →
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3
+                        className="text-xl font-semibold my-4"
+                        style={{ color: colors.theme.primary }}
+                      >
+                        Stay Connected
+                      </h3>
+                      <div className="flex flex-col sm:flex-row gap-4">
                         <Link
-                          key={link.url}
-                          href={link.url}
+                          href={applicationStatusData.discord.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          className="flex-1"
                         >
-                          <div className="bg-white dark:bg-gray-800 rounded-lg p-2 shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700">
-                            <h4 className="font-medium text-theme-primary hover:underline">
-                              {link.title}
-                            </h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                              View project showcase →
-                            </p>
+                          <div className="bg-[#5865F2] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
+                            <div>
+                              <div className="font-medium">Join Discord</div>
+                              <div className="text-sm opacity-90">
+                                Chat with organizers & participants
+                              </div>
+                            </div>
                           </div>
                         </Link>
-                      ))}
+
+                        <Link
+                          href={applicationStatusData.instagram.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1"
+                        >
+                          <div className="bg-gradient-to-r from-[#405DE6] via-[#E1306C] to-[#FFDC80] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
+                            <div>
+                              <div className="font-medium">Follow Instagram</div>
+                              <div className="text-sm opacity-90">
+                                Get latest updates & announcements
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </div>
-
-
-                <div>
-                  <h3
-                    className="text-xl font-semibold my-4"
-                    style={{ color: colors.theme.primary }}
-                  >
-                    Stay Connected
-                  </h3>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Link
-                      href={applicationStatusData.discord.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1"
-                    >
-                      <div className="bg-[#5865F2] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
-                        <div>
-                          <div className="font-medium">Join Discord</div>
-                          <div className="text-sm opacity-90">
-                            Chat with organizers & participants
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-
-                    <Link
-                      href={applicationStatusData.instagram.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1"
-                    >
-                      <div className="bg-gradient-to-r from-[#405DE6] via-[#E1306C] to-[#FFDC80] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
-                        <div>
-                          <div className="font-medium">Follow Instagram</div>
-                          <div className="text-sm opacity-90">
-                            Get latest updates & announcements
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
-              </CardContent>
-            </TabsContent>
-          </Card>
-        </Tabs>
+                  </CardContent>
+                </TabsContent>
+              </Card>
+            </Tabs>
+          </>
+        )}
       </div>
     </div>
   );
