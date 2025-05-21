@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
-import { applicationData, applicationStatusData } from "@/lib/applicationData";
+import { applicationData, applicationStatusData, applicationDeadline } from "@/lib/applicationData";
 import { Loader2, CalendarOff } from "lucide-react";
 
 type Status =
@@ -330,10 +330,10 @@ export default function ApplicationDashboard() {
     }
   };
 
-  const applicationDeadline = new Date("2024-05-26T23:59:59");
   const isDeadlinePassed = new Date() > applicationDeadline;
 
   return (
+    
     <div
       className="flex justify-center items-start w-full py-8"
       style={{
