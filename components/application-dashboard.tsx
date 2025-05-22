@@ -27,8 +27,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
-import { applicationData, applicationStatusData } from "@/lib/applicationData";
-import { Loader2 } from "lucide-react";
+import { applicationData, applicationStatusData, applicationDeadline } from "@/lib/applicationData";
+import { Loader2, CalendarOff } from "lucide-react";
 
 type Status =
   | "not_started"
@@ -186,6 +186,7 @@ export default function ApplicationDashboard() {
   const cancelTabChange = () => {
     setPendingTabChange(null);
     setShowUnsavedDialog(false);
+    setSubmissionData({});
   };
 
   const prepareSubmission = () => {
@@ -329,7 +330,10 @@ export default function ApplicationDashboard() {
     }
   };
 
+  const isDeadlinePassed = new Date() > applicationDeadline;
+
   return (
+    
     <div
       className="flex justify-center items-start w-full py-8"
       style={{
@@ -378,6 +382,91 @@ export default function ApplicationDashboard() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <span className="ml-2 text-lg font-medium">Loading application...</span>
           </div>
+        ) : isDeadlinePassed && applicationStatus === "not_started" ? (
+          <Card
+            style={{
+              backgroundColor: uiConfig.inputStyles.sectionBackground,
+              borderColor: colors.theme.inputBorder,
+              borderRadius: uiConfig.inputStyles.sectionBorderRadius,
+              boxShadow: uiConfig.inputStyles.sectionBoxShadow,
+              padding: isMobile
+                ? uiConfig.spacing.mobile.containerPadding
+                : uiConfig.spacing.containerPadding,
+              textAlign: 'center',
+            }}
+            className="border shadow-md"
+          >
+            <CardHeader>
+              <CardTitle
+                className="text-2xl mb-2 flex items-center justify-center"
+                style={{
+                  fontSize: isMobile
+                    ? uiConfig.typography.fontSize.mobile.sectionTitle
+                    : uiConfig.typography.fontSize.sectionTitle,
+                  fontWeight: uiConfig.typography.fontWeight.bold,
+                  color: colors.theme.warning,
+                }}
+              >
+                <CalendarOff className="h-8 w-8 mr-2" />
+                Application Period Over
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p
+                style={{
+                  fontSize: isMobile
+                    ? uiConfig.typography.fontSize.mobile.answerOption
+                    : uiConfig.typography.fontSize.answerOption,
+                  color: colors.theme.secondary,
+                  lineHeight: uiConfig.typography.lineHeight.relaxed,
+                }}
+              >
+                Unfortunately, the application period for this hackathon has ended.
+                We hope to see you at our future events!
+              </p>
+              <div className="mt-6">
+                <h3
+                  className="text-xl font-semibold my-4"
+                  style={{ color: colors.theme.primary }}
+                >
+                  Stay Connected
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    href={applicationStatusData.discord.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 max-w-xs"
+                  >
+                    <div className="bg-[#5865F2] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
+                      <div>
+                        <div className="font-medium">Join Discord</div>
+                        <div className="text-sm opacity-90">
+                          Chat with organizers & participants
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href={applicationStatusData.instagram.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 max-w-xs"
+                  >
+                    <div className="bg-gradient-to-r from-[#405DE6] via-[#E1306C] to-[#FFDC80] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
+                      <div>
+                        <div className="font-medium">Follow Instagram</div>
+                        <div className="text-sm opacity-90">
+                          Get latest updates & announcements
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <>
             <AlertDialog
