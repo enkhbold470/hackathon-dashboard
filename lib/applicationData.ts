@@ -1,3 +1,5 @@
+export const applicationDeadline = new Date("2025-05-23T23:59:59");
+
 export const applicationData = {
   disclaimer: {
     title: "Important Information",
