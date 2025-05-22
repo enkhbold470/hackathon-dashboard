@@ -12,7 +12,8 @@ import {
 import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { Analytics } from "@vercel/analytics/react"
-
+import { linkToMatchAnza } from "@/lib/applicationData";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: siteConfig.title,
@@ -58,14 +59,24 @@ export default function RootLayout({
       <body>
         <ClerkProvider>
           <Providers>
-            <header className="flex justify-end items-center p-4 gap-4 h-16">
-              <SignedOut>
-                <SignInButton />
-                <SignUpButton />
+            <header className="flex justify-between items-center p-4 gap-4 h-16">
+            
+              <Link href={linkToMatchAnza} className="text-blue-500 group relative" target="_blank"> 
+                Looking for teammate? Click here!
+                <span className="absolute hidden group-hover:block bg-gray-800 text-white text-xs p-2 rounded-md -bottom-8 left-0 whitespace-nowrap">
+                  Platform for finding teammates based on project interests
+                </span>
+              </Link>
+              
+              <div className="flex gap-4">
+                <SignedOut>
+                  <SignInButton />
+                  <SignUpButton />
               </SignedOut>
               <SignedIn>
-                <UserButton />
-              </SignedIn>
+                  <UserButton />
+                </SignedIn>
+              </div>
             </header>
             <main>{children}</main>
             <Toaster />
