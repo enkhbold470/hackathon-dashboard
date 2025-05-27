@@ -1,4 +1,4 @@
-export const applicationDeadline = new Date("2025-05-27T23:59:59");
+export const applicationDeadline = new Date("2025-05-24T23:59:59");
 export const linkToMatchAnza = "https://match.deanzahacks.com"
 export const applicationData = {
   disclaimer: {
