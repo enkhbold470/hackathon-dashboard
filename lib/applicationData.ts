@@ -1,8 +1,8 @@
-export const applicationDeadline = new Date("2025-05-23T23:59:59");
+export const applicationDeadline = new Date("2025-05-27T23:59:59");
 export const linkToMatchAnza = "https://match.deanzahacks.com"
 export const applicationData = {
   disclaimer: {
-    title: "Important Information",
+    title: "⚠️ Important Information",
     content: "Each team member must apply individually. Teams are optional—you can join later or participate solo. Max team size: 4 members. Space is limited, so apply ASAP!"
   },
   personalInfo: {
