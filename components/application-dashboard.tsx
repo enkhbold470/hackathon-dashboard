@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
-import { applicationData, applicationStatusData, applicationDeadline } from "@/lib/applicationData";
+import { applicationData, applicationStatusData, applicationDeadline, linkToMatchAnza, discordInviteLink } from "@/lib/applicationData";
 import { Loader2, CalendarOff } from "lucide-react";
 
 type Status =
@@ -383,90 +383,152 @@ export default function ApplicationDashboard() {
             <span className="ml-2 text-lg font-medium">Loading application...</span>
           </div>
         ) : isDeadlinePassed && applicationStatus === "not_started" ? (
-          <Card
-            style={{
-              backgroundColor: uiConfig.inputStyles.sectionBackground,
-              borderColor: colors.theme.inputBorder,
-              borderRadius: uiConfig.inputStyles.sectionBorderRadius,
-              boxShadow: uiConfig.inputStyles.sectionBoxShadow,
-              padding: isMobile
-                ? uiConfig.spacing.mobile.containerPadding
-                : uiConfig.spacing.containerPadding,
-              textAlign: 'center',
-            }}
-            className="border shadow-md"
-          >
-            <CardHeader>
-              <CardTitle
-                className="text-2xl mb-2 flex items-center justify-center"
-                style={{
-                  fontSize: isMobile
-                    ? uiConfig.typography.fontSize.mobile.sectionTitle
-                    : uiConfig.typography.fontSize.sectionTitle,
-                  fontWeight: uiConfig.typography.fontWeight.bold,
-                  color: colors.theme.warning,
-                }}
-              >
-                <CalendarOff className="h-8 w-8 mr-2" />
-                Application Period Over
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p
-                style={{
-                  fontSize: isMobile
-                    ? uiConfig.typography.fontSize.mobile.answerOption
-                    : uiConfig.typography.fontSize.answerOption,
-                  color: colors.theme.secondary,
-                  lineHeight: uiConfig.typography.lineHeight.relaxed,
-                }}
-              >
-                Unfortunately, the application period for this hackathon has ended.
-                We hope to see you at our future events!
-              </p>
-              <div className="mt-6">
-                <h3
-                  className="text-xl font-semibold my-4"
-                  style={{ color: colors.theme.primary }}
-                >
-                  Stay Connected
-                </h3>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    href={applicationStatusData.discord.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 max-w-xs"
-                  >
-                    <div className="bg-[#5865F2] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
-                      <div>
-                        <div className="font-medium">Join Discord</div>
-                        <div className="text-sm opacity-90">
-                          Chat with organizers & participants
-                        </div>
-                      </div>
+          <div className="relative overflow-hidden">
+            {/* Background decorative elements */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-10 left-10 w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-xl"></div>
+              <div className="absolute top-32 right-20 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full blur-lg"></div>
+              <div className="absolute bottom-20 left-1/4 w-24 h-24 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full blur-xl"></div>
+            </div>
+            
+            <Card
+              style={{
+                backgroundColor: `${colors.theme.background}dd`,
+                borderColor: colors.theme.warning,
+                borderWidth: "2px",
+                borderRadius: uiConfig.inputStyles.sectionBorderRadius,
+                boxShadow: `0 20px 25px -5px ${colors.theme.warning}20, 0 10px 10px -5px ${colors.theme.warning}10`,
+                backdropFilter: 'blur(10px)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              className="border shadow-2xl"
+            >
+              {/* Animated gradient border */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-lg opacity-20 animate-pulse"></div>
+              
+              <CardHeader className="relative z-10 text-center pt-8">
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <CalendarOff 
+                      className="h-20 w-20 text-orange-500 animate-bounce" 
+                      style={{ filter: 'drop-shadow(0 4px 8px rgba(249, 115, 22, 0.3))' }}
+                    />
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-lg font-bold animate-pulse">
+                      !
                     </div>
-                  </Link>
-
-                  <Link
-                    href={applicationStatusData.instagram.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 max-w-xs"
-                  >
-                    <div className="bg-gradient-to-r from-[#405DE6] via-[#E1306C] to-[#FFDC80] text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow flex items-center gap-3">
-                      <div>
-                        <div className="font-medium">Follow Instagram</div>
-                        <div className="text-sm opacity-90">
-                          Get latest updates & announcements
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                
+                <CardTitle
+                  className="text-4xl mb-4 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 bg-clip-text text-transparent font-extrabold"
+                  style={{
+                    fontSize: isMobile
+                      ? '2rem'
+                      : '2.5rem',
+                    fontWeight: 900,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  🚨 Application Period Over
+                </CardTitle>
+                
+                <div className="bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-full py-2 px-6 inline-block border border-yellow-300 dark:border-yellow-600">
+                  <p className="text-lg font-semibold text-orange-800 dark:text-orange-200">
+                    Deadline was May 24th, 2025
+                  </p>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="relative z-10 pb-8">
+                <div className="text-center space-y-6">
+                  <div className="bg-white/10 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <h3 className="text-2xl font-bold mb-3 text-gray-800 dark:text-gray-100">
+                      😔 Unfortunately, you missed the deadline
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: isMobile
+                          ? uiConfig.typography.fontSize.mobile.answerOption
+                          : '1.125rem',
+                        color: colors.theme.secondary,
+                        lineHeight: uiConfig.typography.lineHeight.relaxed,
+                      }}
+                      className="mb-4"
+                    >
+                      The application period for DAHacks 2025 has officially ended. 
+                      But don't worry - there are still ways to stay connected with our community!
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+                    <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-xl p-6 border border-purple-300/30">
+                      <h4 className="text-xl font-bold mb-3 flex items-center text-purple-700 dark:text-purple-300">
+                        🔮 Future Events
+                      </h4>
+                      <p className="text-gray-700 dark:text-gray-300">
+                        Follow us to be the first to know about our next hackathon and other exciting events!
+                      </p>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-green-500/10 to-teal-500/10 rounded-xl p-6 border border-green-300/30">
+                      <h4 className="text-xl font-bold mb-3 flex items-center text-green-700 dark:text-green-300">
+                        👥 Community
+                      </h4>
+                      <p className="text-gray-700 dark:text-gray-300">
+                        Join our community to network, share projects, and collaborate with fellow developers!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl p-8 border border-indigo-300/30">
+                    <h3
+                      className="text-2xl font-bold mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
+                    >
+                      🚀 Stay Connected
+                    </h3>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
+                      <Link
+                        href={applicationStatusData.discord.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 transform hover:scale-105 transition-all duration-300"
+                      >
+                        <div className="bg-gradient-to-r from-[#5865F2] to-[#4752C4] text-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                          <div className="relative z-10">
+                            <div className="text-2xl mb-2">💬</div>
+                            <div className="font-bold text-lg">Join Discord</div>
+                            <div className="text-sm opacity-90">
+                              Chat with organizers & participants
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href={applicationStatusData.instagram.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 transform hover:scale-105 transition-all duration-300"
+                      >
+                        <div className="bg-gradient-to-r from-[#405DE6] via-[#E1306C] to-[#FFDC80] text-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                          <div className="relative z-10">
+                            <div className="text-2xl mb-2">📸</div>
+                            <div className="font-bold text-lg">Follow Instagram</div>
+                            <div className="text-sm opacity-90">
+                              Get latest updates & announcements
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <>
             <AlertDialog
