@@ -1,5 +1,6 @@
 export const applicationDeadline = new Date("2025-05-24T23:59:59");
 export const linkToMatchAnza = "https://match.deanzahacks.com"
+export const discordInviteLink = "https://discord.gg/bJWTS7qem6"
 export const applicationData = {
   disclaimer: {
     title: "⚠️ Important Information",
