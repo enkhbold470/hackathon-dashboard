@@ -12,8 +12,7 @@ import {
 import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { Analytics } from "@vercel/analytics/react"
-import { linkToMatchAnza } from "@/lib/applicationData";
-import Link from "next/link";
+import Navigation from "@/components/navigation";
 
 export const metadata: Metadata = {
   title: siteConfig.title,
@@ -55,30 +54,42 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
- 
       <body>
         <ClerkProvider>
           <Providers>
-            <header className="flex justify-between items-center p-4 gap-4 h-16">
-            
-              <Link href={linkToMatchAnza} className="text-blue-500 group relative" target="_blank"> 
-                Looking for teammate? Click here!
-                <span className="absolute hidden group-hover:block bg-gray-800 text-white text-xs p-2 rounded-md -bottom-8 left-0 whitespace-nowrap">
-                  Platform for finding teammates based on project interests
-                </span>
-              </Link>
-              
-              <div className="flex gap-4">
-                <SignedOut>
-                  <SignInButton />
-                  <SignUpButton />
-              </SignedOut>
-              <SignedIn>
-                  <UserButton />
-                </SignedIn>
+            <header className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg sticky top-0 z-40">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-16">
+                  <div className="flex items-center">
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      DAHacks 2025
+                    </h1>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <SignedOut>
+                      <SignInButton mode="modal">
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                          Sign In
+                        </button>
+                      </SignInButton>
+                      <SignUpButton mode="modal">
+                        <button className="border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-4 py-2 rounded-lg transition-colors">
+                          Sign Up
+                        </button>
+                      </SignUpButton>
+                    </SignedOut>
+                    <SignedIn>
+                      <UserButton afterSignOutUrl="/" />
+                    </SignedIn>
+                  </div>
+                </div>
               </div>
             </header>
-            <main>{children}</main>
+            
+            <Navigation />
+            
+            <main className="min-h-screen">{children}</main>
             <Toaster />
           </Providers>
         </ClerkProvider>
